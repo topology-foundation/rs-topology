@@ -25,7 +25,7 @@ type P2P struct {
 }
 
 func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int) *P2P {
-	host, err := libp2p.New(libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"))
+	host, err := libp2p.New(libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/1319"))
 	if err != nil {
 		panic(err)
 	}
