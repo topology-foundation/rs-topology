@@ -1,8 +1,8 @@
 {
     "networkConfig": {
-        "namespace": "custom-namespace",
-        "topics": ["gram-topic1", "gram-topic2"],
-        "maxPeers": 10,
+        "namespace": "gram-namespace",
+        "topics": ["gram-topic"],
+        "maxPeers": 1,
         "port": 1319
     }
 }
