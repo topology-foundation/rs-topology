@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	app := app.NewApp()
 
 	app.Name = "gram"
@@ -28,9 +29,16 @@ func main() {
 func gram() error {
 	ctx := context.Background()
 
-	storage := storage.NewStorage(ctx, config.DefaultStorageConfig())
-	execution := execution.NewExecution(ctx, storage, config.DefaultExecutionConfig())
-	network := network.NewNetwork(ctx, execution, storage, config.DefaultNetworkConfig())
+	// Load configuration
+	cfg, err := config.LoadConfig("./config.json")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to load configuration: %v\n", err)
+		os.Exit(1)
+	}
+
+	storage := storage.NewStorage(ctx, &cfg.Storage)
+	execution := execution.NewExecution(ctx, storage, &cfg.Execution)
+	network := network.NewNetwork(ctx, execution, storage, &cfg.Network)
 
 	network.Start()
 
