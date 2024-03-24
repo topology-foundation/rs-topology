@@ -7,6 +7,7 @@ type NetworkConfig struct {
 	Namespace string
 	Topics    []string
 	MaxPeers  int
+	Port      int
 }
 
 type StorageConfig struct {
@@ -21,6 +22,7 @@ func DefaultNetworkConfig() *NetworkConfig {
 		Namespace: "gram-namespace",
 		Topics:    []string{"gram-topic"},
 		MaxPeers:  1,
+		Port:      1319,
 	}
 }
 

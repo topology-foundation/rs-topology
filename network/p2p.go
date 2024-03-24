@@ -20,12 +20,16 @@ type P2P struct {
 	host      host.Host
 	namespace string
 	maxPeers  int
+	port      int
 	pubsub    *pubsub.PubSub
 	topics    map[string]*pubsub.Topic
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int) *P2P {
-	host, err := libp2p.New(libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/1319"))
+func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int) *P2P {
+
+	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
+
+	host, err := libp2p.New(libp2p.ListenAddrStrings(listenAddr))
 	if err != nil {
 		panic(err)
 	}
@@ -41,6 +45,7 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, max
 		host:      host,
 		namespace: namespace,
 		maxPeers:  maxPeers,
+		port:      port,
 		pubsub:    gossipsub,
 		topics:    make(map[string]*pubsub.Topic),
 	}
