@@ -25,12 +25,13 @@ type AppConfig struct {
 	Storage   StorageConfig   `json:"storageConfig"`
 }
 
+type ConfigOverrides struct {
+	Port     int
+	MaxPeers int
+}
+
 func LoadConfig() (*AppConfig, error) {
-
-	var configPath string
-	flag.StringVar(&configPath, "config", "./config.json", "Path to configuration file")
-
-	flag.Parse()
+	configPath, overrides := parseFlags()
 
 	cfg := &AppConfig{}
 
@@ -40,10 +41,37 @@ func LoadConfig() (*AppConfig, error) {
 	}
 	defer file.Close()
 
-	err = json.NewDecoder(file).Decode(cfg)
-	if err != nil {
+	if err = json.NewDecoder(file).Decode(cfg); err != nil {
 		return cfg, err
 	}
 
+	applyOverrides(cfg, overrides)
+
 	return cfg, nil
+}
+
+func parseFlags() (string, ConfigOverrides) {
+	var configPath string
+	var overrides ConfigOverrides
+
+	flag.StringVar(&configPath, "config", "./config.json", "Path to configuration file")
+	flag.StringVar(&configPath, "c", "./config.json", "Path to configuration file (shorthand)")
+
+	flag.IntVar(&overrides.Port, "port", 0, "Port to override the one in the configuration file")
+	flag.IntVar(&overrides.Port, "p", 0, "Port to override the one in the configuration file")
+
+	flag.IntVar(&overrides.MaxPeers, "peers", 0, "MaxPeers to override the one in the configuration file")
+
+	flag.Parse()
+
+	return configPath, overrides
+}
+
+func applyOverrides(cfg *AppConfig, overrides ConfigOverrides) {
+	if overrides.Port > 0 {
+		cfg.Network.Port = overrides.Port
+	}
+	if overrides.MaxPeers > 0 {
+		cfg.Network.MaxPeers = overrides.MaxPeers
+	}
 }
