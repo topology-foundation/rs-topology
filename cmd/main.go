@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	app := app.NewApp()
 
 	app.Name = "gram"
