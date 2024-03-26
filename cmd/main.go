@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 
@@ -13,11 +14,18 @@ import (
 )
 
 func main() {
+	var configPath string
+	flag.StringVar(&configPath, "config", "./config.json", "Path to configuration file")
+
+	flag.Parse()
+
 	app := app.NewApp()
 
 	app.Name = "gram"
 	app.Description = "The official Go implementation of the RAM network"
-	app.Action = gram
+	app.Action = func() error {
+		return gram(configPath)
+	}
 
 	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -25,11 +33,11 @@ func main() {
 	}
 }
 
-func gram() error {
+func gram(configPath string) error {
 	ctx := context.Background()
 
 	// Load configuration
-	cfg, err := config.LoadConfig("./config.json")
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to load configuration: %v\n", err)
 		os.Exit(1)
