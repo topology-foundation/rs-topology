@@ -24,29 +24,8 @@ type AppConfig struct {
 	Storage   StorageConfig   `json:"storageConfig"`
 }
 
-func DefaultExecutionConfig() *ExecutionConfig {
-	return &ExecutionConfig{}
-}
-
-func DefaultNetworkConfig() *NetworkConfig {
-	return &NetworkConfig{
-		Namespace: "gram-namespace",
-		Topics:    []string{"gram-topic"},
-		MaxPeers:  1,
-		Port:      1319,
-	}
-}
-
-func DefaultStorageConfig() *StorageConfig {
-	return &StorageConfig{}
-}
-
 func LoadConfig(path string) (*AppConfig, error) {
-	cfg := &AppConfig{
-		Execution: *DefaultExecutionConfig(),
-		Network:   *DefaultNetworkConfig(),
-		Storage:   *DefaultStorageConfig(),
-	}
+	cfg := &AppConfig{}
 
 	file, err := os.Open(path)
 	if err != nil {
