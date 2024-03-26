@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"flag"
 	"os"
 )
 
@@ -24,10 +25,16 @@ type AppConfig struct {
 	Storage   StorageConfig   `json:"storageConfig"`
 }
 
-func LoadConfig(path string) (*AppConfig, error) {
+func LoadConfig() (*AppConfig, error) {
+
+	var configPath string
+	flag.StringVar(&configPath, "config", "./config.json", "Path to configuration file")
+
+	flag.Parse()
+
 	cfg := &AppConfig{}
 
-	file, err := os.Open(path)
+	file, err := os.Open(configPath)
 	if err != nil {
 		return cfg, err
 	}
