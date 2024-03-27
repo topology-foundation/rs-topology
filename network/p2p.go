@@ -15,17 +15,18 @@ import (
 )
 
 type P2P struct {
-	ctx       context.Context
-	mediator  NetworkMediator
-	host      host.Host
-	namespace string
-	maxPeers  int
-	port      int
-	pubsub    *pubsub.PubSub
-	topics    map[string]*pubsub.Topic
+	ctx            context.Context
+	mediator       NetworkMediator
+	host           host.Host
+	namespace      string
+	maxPeers       int
+	port           int
+	bootstrapNodes []string
+	pubsub         *pubsub.PubSub
+	topics         map[string]*pubsub.Topic
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int) *P2P {
+func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int, bootstrapNodes []string) *P2P {
 
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
@@ -40,14 +41,15 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, max
 	}
 
 	return &P2P{
-		ctx:       ctx,
-		mediator:  mediator,
-		host:      host,
-		namespace: namespace,
-		maxPeers:  maxPeers,
-		port:      port,
-		pubsub:    gossipsub,
-		topics:    make(map[string]*pubsub.Topic),
+		ctx:            ctx,
+		mediator:       mediator,
+		host:           host,
+		namespace:      namespace,
+		maxPeers:       maxPeers,
+		port:           port,
+		bootstrapNodes: bootstrapNodes,
+		pubsub:         gossipsub,
+		topics:         make(map[string]*pubsub.Topic),
 	}
 }
 
@@ -102,13 +104,13 @@ func (p2p *P2P) getKademliaDHT() *dht.IpfsDHT {
 	}
 
 	var wg sync.WaitGroup
-	for i := range dht.DefaultBootstrapPeers {
-		peerInfo, err := peer.AddrInfoFromP2pAddr(dht.DefaultBootstrapPeers[i])
+	for _, addr := range p2p.bootstrapNodes {
+		peerInfo, err := peer.AddrInfoFromString(addr)
 		if err != nil {
 			panic(err)
 		}
 
-		go func() {
+		go func(peerInfo *peer.AddrInfo) {
 			defer wg.Done()
 
 			if err := p2p.host.Connect(p2p.ctx, *peerInfo); err != nil {
@@ -116,7 +118,7 @@ func (p2p *P2P) getKademliaDHT() *dht.IpfsDHT {
 			} else {
 				fmt.Println("(Network) Successfully connected to bootstrap node:", peerInfo)
 			}
-		}()
+		}(peerInfo)
 
 		wg.Add(1)
 	}

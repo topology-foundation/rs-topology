@@ -14,10 +14,11 @@ type ExecutionConfig struct {
 }
 
 type NetworkConfig struct {
-	Namespace string   `json:"namespace"`
-	Topics    []string `json:"topics"`
-	MaxPeers  int      `json:"maxPeers"`
-	Port      int      `json:"port"`
+	Namespace      string   `json:"namespace"`
+	Topics         []string `json:"topics"`
+	MaxPeers       int      `json:"maxPeers"`
+	Port           int      `json:"port"`
+	BootstrapNodes []string `json:"bootstrapNodes"`
 }
 
 type StorageConfig struct {
