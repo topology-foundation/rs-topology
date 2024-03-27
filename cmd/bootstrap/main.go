@@ -5,41 +5,23 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/topology-gg/gram/config"
-	"github.com/topology-gg/gram/execution"
-	"github.com/topology-gg/gram/internal/app"
-	"github.com/topology-gg/gram/network"
-	"github.com/topology-gg/gram/storage"
+	"github.com/topology-gg/gram/bootstrap"
 )
 
 func main() {
-	app := app.NewApp()
-
-	app.Name = "gram"
-	app.Description = "The official Go implementation of the RAM network"
-	app.Action = gram
-
-	if err := app.Run(os.Args); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-func gram() error {
 	ctx := context.Background()
+	listenAddr := "/ip4/0.0.0.0/tcp/4001"
 
-	// Load configuration
-	cfg, err := config.LoadConfig()
+	bootstrapNode, err := bootstrap.New(ctx, listenAddr)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to load configuration: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to create bootstrap node: %v\n", err)
 		os.Exit(1)
 	}
 
-	storage := storage.NewStorage(ctx, &cfg.Storage)
-	execution := execution.NewExecution(ctx, storage, &cfg.Execution)
-	network := network.NewNetwork(ctx, execution, storage, &cfg.Network)
+	if err := bootstrapNode.Start(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to start bootstrap node: %v\n", err)
+		os.Exit(1)
+	}
 
-	network.Start()
-
-	return nil
+	select {}
 }
