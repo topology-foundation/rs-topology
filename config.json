@@ -4,5 +4,8 @@
         "topics": ["gram-topic"],
         "maxPeers": 1,
         "port": 1319
+    },
+    "storageConfig": {
+        "databasePath": "gram-database"
     }
 }

@@ -21,6 +21,7 @@ type NetworkConfig struct {
 }
 
 type StorageConfig struct {
+	DatabasePath string `json:"databasePath"`
 }
 
 type AppConfig struct {
