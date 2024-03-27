@@ -1,29 +1,48 @@
 package config
 
+import (
+	"encoding/json"
+	"flag"
+	"os"
+)
+
+var (
+	configPath = flag.String("config", "config.json", "The path to the configuration file")
+)
+
 type ExecutionConfig struct {
 }
 
 type NetworkConfig struct {
-	Namespace string
-	Topics    []string
-	MaxPeers  int
+	Namespace string   `json:"namespace"`
+	Topics    []string `json:"topics"`
+	MaxPeers  int      `json:"maxPeers"`
+	Port      int      `json:"port"`
 }
 
 type StorageConfig struct {
 }
 
-func DefaultExecutionConfig() *ExecutionConfig {
-	return &ExecutionConfig{}
+type AppConfig struct {
+	Execution ExecutionConfig `json:"executionConfig"`
+	Network   NetworkConfig   `json:"networkConfig"`
+	Storage   StorageConfig   `json:"storageConfig"`
 }
 
-func DefaultNetworkConfig() *NetworkConfig {
-	return &NetworkConfig{
-		Namespace: "gram-namespace",
-		Topics:    []string{"gram-topic"},
-		MaxPeers:  1,
+func LoadConfig() (*AppConfig, error) {
+	flag.Parse()
+
+	cfg := &AppConfig{}
+
+	file, err := os.Open(*configPath)
+	if err != nil {
+		return cfg, err
 	}
-}
+	defer file.Close()
 
-func DefaultStorageConfig() *StorageConfig {
-	return &StorageConfig{}
+	if err = json.NewDecoder(file).Decode(cfg); err != nil {
+		return cfg, err
+	}
+
+	return cfg, nil
 }

@@ -1,0 +1,8 @@
+{
+    "networkConfig": {
+        "namespace": "gram-namespace",
+        "topics": ["gram-topic"],
+        "maxPeers": 1,
+        "port": 1319
+    }
+}

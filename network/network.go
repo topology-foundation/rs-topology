@@ -41,7 +41,7 @@ func NewNetwork(ctx context.Context, execution execution.Execution, storage stor
 }
 
 func (network *NetworkModule) Start() {
-	p2p := NewP2P(network.ctx, network, network.config.Namespace, network.config.MaxPeers)
+	p2p := NewP2P(network.ctx, network, network.config.Namespace, network.config.MaxPeers, network.config.Port)
 	network.p2p = p2p
 
 	fmt.Println("(Network) Host ID:", p2p.host.ID())
