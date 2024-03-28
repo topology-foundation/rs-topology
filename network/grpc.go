@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/topology-gg/gram/config"
 	helloPb "github.com/topology-gg/gram/gen/gram/base"
 	"google.golang.org/grpc"
 )
@@ -21,20 +22,22 @@ func (s *helloServer) SayHello(ctx context.Context, in *helloPb.HelloRequest) (*
 
 // GRPC represents a struct for GRPC server
 type GRPC struct {
-	ctx context.Context
+	ctx    context.Context
+	config *config.GrpcConfig
 }
 
 // NewGRPC creates a new grpc server struct
-func NewGRPC(ctx context.Context) *GRPC {
+func NewGRPC(ctx context.Context, config *config.GrpcConfig) *GRPC {
 	return &GRPC{
-		ctx: ctx,
+		ctx:    ctx,
+		config: config,
 	}
 }
 
 // Start starts a GRPC server
 func (g *GRPC) Start() {
 	// TODO: read port from config
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", 1212))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", g.config.Port))
 	if err != nil {
 		panic(err)
 	}
