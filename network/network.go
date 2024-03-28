@@ -16,6 +16,7 @@ type NetworkModule struct {
 	config    *config.NetworkConfig
 	p2p       *P2P
 	rpc       *RPC
+	grpc      *GRPC
 }
 
 type NetworkMediator interface {
@@ -37,6 +38,7 @@ func NewNetwork(ctx context.Context, execution execution.Execution, storage stor
 		config:    config,
 		p2p:       nil,
 		rpc:       nil,
+		grpc:      nil,
 	}
 }
 
@@ -49,6 +51,11 @@ func (network *NetworkModule) Start() {
 
 	go p2p.JoinNetwork()
 	go p2p.SubscribeTopics(network.config.Topics)
+
+	grpc := NewGRPC(network.ctx)
+	network.grpc = grpc
+
+	go grpc.Start()
 
 	rpc := NewRPC(network.ctx, network)
 	network.rpc = rpc
