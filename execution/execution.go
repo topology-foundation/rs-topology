@@ -28,5 +28,5 @@ func (execution *ExecutionModule) Execute(message string) {
 
 	fmt.Printf("(Execution) %s", message)
 	kv := strings.Split(message, ": ")
-	execution.storage.Set([]byte(kv[0]), []byte(kv[1]))
+	_ = execution.storage.Set([]byte(kv[0]), []byte(kv[1]))
 }

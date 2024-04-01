@@ -8,3 +8,7 @@ gram:
 .PHONY: clean
 clean:
 	rm -rf bin
+
+.PHONY: lint-check
+lint-check:
+	golangci-lint run
