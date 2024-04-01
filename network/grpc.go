@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/topology-gg/gram/config"
-	helloPb "github.com/topology-gg/gram/gen/gram/base"
+	helloPb "github.com/topology-gg/gram/proto/gen/gram/base"
 	"google.golang.org/grpc"
 )
 
