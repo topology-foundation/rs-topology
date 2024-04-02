@@ -10,5 +10,8 @@
     },
     "grpcConfig": {
         "port": 1312
+    },
+    "rpcConfig": {
+        "port": 8080
     }
 }

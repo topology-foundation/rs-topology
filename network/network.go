@@ -15,6 +15,7 @@ type NetworkModule struct {
 	storage    storage.Storage
 	networkCfg *config.NetworkConfig
 	grpcCfg    *config.GrpcConfig
+	rpcCfg     *config.RpcConfig
 	p2p        *P2P
 	rpc        *RPC
 	grpc       *GRPC
@@ -31,13 +32,14 @@ const (
 	SourceRPC
 )
 
-func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig) *NetworkModule {
+func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig, rpcCfg *config.RpcConfig) *NetworkModule {
 	return &NetworkModule{
 		ctx:        ctx,
 		execution:  execution,
 		storage:    storage,
 		networkCfg: config,
 		grpcCfg:    grpcCfg,
+		rpcCfg:     rpcCfg,
 		p2p:        nil,
 		rpc:        nil,
 		grpc:       nil,
@@ -59,7 +61,7 @@ func (network *NetworkModule) Start() {
 
 	go grpc.Start()
 
-	rpc := NewRPC(network.ctx, network)
+	rpc := NewRPC(network.ctx, network, network.rpcCfg)
 	network.rpc = rpc
 
 	rpc.Start()
