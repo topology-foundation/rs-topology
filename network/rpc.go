@@ -5,27 +5,35 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/topology-gg/gram/config"
 )
 
 type RPC struct {
 	ctx      context.Context
 	mediator NetworkMediator
 	server   *http.Server
+	mux      *http.ServeMux
 }
 
-func NewRPC(ctx context.Context, mediator NetworkMediator) *RPC {
-	return &RPC{
+func NewRPC(ctx context.Context, mediator NetworkMediator, config *config.RpcConfig) *RPC {
+	mux := http.NewServeMux()
+	rpc := &RPC{
 		ctx:      ctx,
 		mediator: mediator,
 		server: &http.Server{
-			Addr: ":8080", // TODO: get port from config
+			Addr:    fmt.Sprintf(":%d", config.Port),
+			Handler: mux,
 		},
+		mux: mux,
 	}
+
+	mux.HandleFunc("/rpc", rpc.rpcMessageHandler)
+
+	return rpc
 }
 
 func (rpc *RPC) Start() {
-	http.HandleFunc("/rpc", rpc.rpcMessageHandler) // Set the RPC endpoint
-
 	fmt.Println("Starting RPC server on", rpc.server.Addr)
 	if err := rpc.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
@@ -59,10 +67,12 @@ func (rpc *RPC) rpcMessageHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (rpc *RPC) Shutdown() {
+func (rpc *RPC) Shutdown() error {
 	if err := rpc.server.Shutdown(rpc.ctx); err != nil {
 		fmt.Printf("RPC server shutdown error: %v\n", err)
+		return err
 	} else {
 		fmt.Println("RPC server successfully shut down")
+		return nil
 	}
 }
