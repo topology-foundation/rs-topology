@@ -18,8 +18,12 @@ func (app *App) Run(args []string) error {
 	fmt.Println("Description:", app.Description)
 	fmt.Println()
 
-	if app.Action != nil {
-		app.Action()
+	if app.Action == nil {
+		return nil
+	}
+
+	if err := app.Action(); err != nil {
+		return err
 	}
 
 	return nil

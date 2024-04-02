@@ -13,3 +13,7 @@ clean:
 .PHONY: build-proto
 build-proto:
 	buf generate proto
+
+.PHONY: lint-check
+lint-check:
+	golangci-lint run
