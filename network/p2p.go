@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
+	"github.com/topology-gg/gram/config"
 )
 
 type P2P struct {
@@ -25,7 +26,8 @@ type P2P struct {
 	topics    map[string]*pubsub.Topic
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int) *P2P {
+func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig) *P2P {
+	namespace, maxPeers, port := cfg.Namespace, cfg.MaxPeers, cfg.Port
 
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
