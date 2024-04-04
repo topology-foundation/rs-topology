@@ -14,6 +14,12 @@ type ExecutionConfig struct {
 }
 
 type NetworkConfig struct {
+	P2p  P2pConfig  `json:"p2pConfig"`
+	Grpc GrpcConfig `json:"grpcConfig"`
+	Rpc  RpcConfig  `json:"rpcConfig"`
+}
+
+type P2pConfig struct {
 	Namespace string   `json:"namespace"`
 	Topics    []string `json:"topics"`
 	MaxPeers  int      `json:"maxPeers"`
@@ -34,10 +40,8 @@ type RpcConfig struct {
 
 type AppConfig struct {
 	Execution ExecutionConfig `json:"executionConfig"`
-	Network   NetworkConfig   `json:"networkConfig"`
 	Storage   StorageConfig   `json:"storageConfig"`
-	Grpc      GrpcConfig      `json:"grpcConfig"`
-	Rpc       RpcConfig       `json:"rpcConfig"`
+	Network   NetworkConfig   `json:"networkConfig"`
 }
 
 func LoadConfig() (*AppConfig, error) {

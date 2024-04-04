@@ -35,9 +35,11 @@ func gram() error {
 		os.Exit(1)
 	}
 
+	fmt.Println(&cfg.Network)
+
 	storage := storage.NewStorage(ctx, &cfg.Storage)
 	execution := execution.NewExecution(ctx, storage, &cfg.Execution)
-	network := network.NewNetwork(ctx, execution, storage, &cfg.Network, &cfg.Grpc, &cfg.Rpc)
+	network := network.NewNetwork(ctx, execution, storage, &cfg.Network)
 
 	network.Start()
 
