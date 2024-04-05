@@ -11,7 +11,7 @@ func ListenSigint(ch chan error) {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 
-	_ = <-signalChan
+	<-signalChan
 
 	ch <- fmt.Errorf("Received Ctrl+C")
 }
