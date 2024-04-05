@@ -11,15 +11,13 @@ import (
 )
 
 type NetworkModule struct {
-	ctx        context.Context
-	errCh      chan error
-	execution  execution.Execution
-	storage    storage.Storage
-	networkCfg *config.NetworkConfig
-	grpcCfg    *config.GrpcConfig
-	p2p        *P2P
-	rpc        *RPC
-	grpc       *GRPC
+	ctx       context.Context
+	errCh     chan error
+	execution execution.Execution
+	storage   storage.Storage
+	p2p       *P2P
+	grpc      *GRPC
+	rpc       *RPC
 }
 
 type NetworkMediator interface {
@@ -33,53 +31,48 @@ const (
 	SourceRPC
 )
 
-func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig) (*NetworkModule, error) {
-	return &NetworkModule{
-		ctx:        ctx,
-		errCh:      errCh,
-		execution:  execution,
-		storage:    storage,
-		networkCfg: config,
-		grpcCfg:    grpcCfg,
-		p2p:        nil,
-		rpc:        nil,
-		grpc:       nil,
-	}, nil
-}
+func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) (*NetworkModule, error) {
+	network := &NetworkModule{
+		ctx:       ctx,
+		errCh:     errCh,
+		execution: execution,
+		storage:   storage,
+	}
 
-func (network *NetworkModule) Start() {
-	p2p, err := NewP2P(network.ctx, network.errCh, network, network.networkCfg.Namespace, network.networkCfg.MaxPeers, network.networkCfg.Port)
+	p2p, err := NewP2P(ctx, errCh, network, &config.P2p)
 	if err != nil {
-		network.errCh <- err
-		return
+		return nil, err
+	}
+
+	grpc, err := NewGRPC(ctx, errCh, &config.Grpc)
+	if err != nil {
+		return nil, err
+	}
+
+	rpc, err := NewRPC(ctx, errCh, network, &config.Rpc)
+	if err != nil {
+		return nil, err
 	}
 
 	network.p2p = p2p
-	go network.p2p.JoinNetwork()
-	go network.p2p.SubscribeTopics(network.networkCfg.Topics)
-
-	grpc, err := NewGRPC(network.ctx, network.errCh, network.grpcCfg)
-	if err != nil {
-		network.errCh <- err
-		return
-	}
-
 	network.grpc = grpc
-	go network.grpc.Start()
-
-	rpc, err := NewRPC(network.ctx, network)
-	if err != nil {
-		network.errCh <- err
-		return
-	}
-
 	network.rpc = rpc
+
+	return network, nil
+}
+
+func (network *NetworkModule) Start() {
+	go network.p2p.Start()
+	go network.grpc.Start()
 	go network.rpc.Start()
 }
 
 // Shutdown gracefuly shutdowns network modules
 func (network *NetworkModule) Shutdown() error {
-	// TODO: add other modules shutdown
+	if err := network.rpc.Shutdown(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
 	if err := network.grpc.Shutdown(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}

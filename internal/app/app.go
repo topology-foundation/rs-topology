@@ -31,8 +31,7 @@ func Gram() {
 	execution, err := execution.NewExecution(ctx, storage, &cfg.Execution)
 	logErrorAndPanic(err)
 
-	// TODO: refactor network module into proper submodules separation
-	network, err := network.NewNetwork(ctx, ch, execution, storage, &cfg.Network, &cfg.Grpc)
+	network, err := network.NewNetwork(ctx, ch, execution, storage, &cfg.Network)
 	logErrorAndPanic(err)
 
 	// run modules
