@@ -1,30 +1,67 @@
 package app
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"os"
 
-type App struct {
-	Name        string
-	Description string
-	Action      func() error
-}
+	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/execution"
+	"github.com/topology-gg/gram/network"
+	"github.com/topology-gg/gram/storage"
+	"github.com/topology-gg/gram/util"
+)
 
-func NewApp() *App {
-	return &App{}
-}
+// Gram configures initial values and bootstraps the project
+func Gram() {
+	fmt.Println("Starting gram node")
 
-func (app *App) Run(args []string) error {
-	fmt.Println("Start running an app...")
-	fmt.Println("Name:", app.Name)
-	fmt.Println("Description:", app.Description)
-	fmt.Println()
+	ctx := context.Background()
 
-	if app.Action == nil {
-		return nil
+	// load configuration from file
+	cfg, err := config.LoadConfig()
+	logErrorAndPanic(err)
+
+	ch := make(chan error)
+
+	// instantiate modules
+	storage, err := storage.NewStorage(ctx, &cfg.Storage)
+	logErrorAndPanic(err)
+
+	execution, err := execution.NewExecution(ctx, storage, &cfg.Execution)
+	logErrorAndPanic(err)
+
+	// TODO: refactor network module into proper submodules separation
+	network, err := network.NewNetwork(ctx, ch, execution, storage, &cfg.Network, &cfg.Grpc)
+	logErrorAndPanic(err)
+
+	// run modules
+	go network.Start()
+	go util.ListenSigint(ch)
+
+	// if we are getting an error from one of the modules
+	// we should shutdown everything properly, log received error and terminate the app
+	moduleErr := <-ch
+	fmt.Fprintln(os.Stderr, moduleErr)
+
+	if err := network.Shutdown(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 	}
 
-	if err := app.Action(); err != nil {
-		return err
+	if err := storage.Close(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 	}
 
-	return nil
+	fmt.Println("Shutting down gram")
+}
+
+// This is a private fucntion that is used only during app setup
+// For any other case the app should never panic but handle errors
+func logErrorAndPanic(err error) {
+	if err == nil {
+		return
+	}
+
+	fmt.Fprintln(os.Stderr, err)
+	panic(err)
 }

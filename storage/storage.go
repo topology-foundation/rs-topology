@@ -16,17 +16,17 @@ type StorageModule struct {
 	db     *pebble.DB
 }
 
-func NewStorage(ctx context.Context, config *config.StorageConfig) *StorageModule {
+func NewStorage(ctx context.Context, config *config.StorageConfig) (*StorageModule, error) {
 	db, err := pebble.Open(config.DatabasePath, &pebble.Options{})
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return &StorageModule{
 		ctx:    ctx,
 		config: *config,
 		db:     db,
-	}
+	}, nil
 }
 
 func (storage *StorageModule) Has(key []byte) (bool, error) {
@@ -61,5 +61,10 @@ func (storage *StorageModule) Delete(key []byte) error {
 }
 
 func (storage *StorageModule) Close() error {
-	return storage.db.Close()
+	if err := storage.db.Close(); err != nil {
+		return err
+	}
+
+	fmt.Println("DB connection successfully closed")
+	return nil
 }

@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/libp2p/go-libp2p"
@@ -16,6 +17,7 @@ import (
 
 type P2P struct {
 	ctx       context.Context
+	errCh     chan error
 	mediator  NetworkMediator
 	host      host.Host
 	namespace string
@@ -25,22 +27,25 @@ type P2P struct {
 	topics    map[string]*pubsub.Topic
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int) *P2P {
-
+func NewP2P(ctx context.Context, errCh chan error, mediator NetworkMediator, namespace string, maxPeers int, port int) (*P2P, error) {
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
 	host, err := libp2p.New(libp2p.ListenAddrStrings(listenAddr))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	gossipsub, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
+	fmt.Println("(Network) Host ID:", host.ID())
+	fmt.Println("(Network) Host addresses:", host.Addrs())
 
 	return &P2P{
 		ctx:       ctx,
+		errCh:     errCh,
 		mediator:  mediator,
 		host:      host,
 		namespace: namespace,
@@ -48,7 +53,7 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, max
 		port:      port,
 		pubsub:    gossipsub,
 		topics:    make(map[string]*pubsub.Topic),
-	}
+	}, nil
 }
 
 func (p2p *P2P) JoinNetwork() {
@@ -68,14 +73,16 @@ func (p2p *P2P) SubscribeTopics(topics []string) {
 
 		pubsubTopic, err := p2p.pubsub.Join(topics[i])
 		if err != nil {
-			panic(err)
+			p2p.errCh <- err
+			return
 		}
 
 		p2p.topics[topics[i]] = pubsubTopic
 
 		subscription, err := pubsubTopic.Subscribe()
 		if err != nil {
-			panic(err)
+			p2p.errCh <- err
+			return
 		}
 
 		go p2p.p2pMessageHandler(subscription)
@@ -145,7 +152,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 			if err := p2p.host.Connect(p2p.ctx, peerInfo); err != nil {
 				fmt.Println("(Network) Failed to connect to peer:", err)
 			} else {
-				peers += 1
+				peers++
 				isConnected = true
 				fmt.Println("(Network) Successfully connected to peer:", peerInfo)
 			}
@@ -163,7 +170,9 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 	for {
 		message, err := subscription.Next(p2p.ctx)
 		if err != nil {
-			panic(err)
+			// TODO: log error properly with logger
+			fmt.Fprintln(os.Stderr, err)
+			continue
 		}
 
 		sender := message.ReceivedFrom

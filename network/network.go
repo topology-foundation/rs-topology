@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
@@ -11,6 +12,7 @@ import (
 
 type NetworkModule struct {
 	ctx        context.Context
+	errCh      chan error
 	execution  execution.Execution
 	storage    storage.Storage
 	networkCfg *config.NetworkConfig
@@ -31,9 +33,10 @@ const (
 	SourceRPC
 )
 
-func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig) *NetworkModule {
+func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig) (*NetworkModule, error) {
 	return &NetworkModule{
 		ctx:        ctx,
+		errCh:      errCh,
 		execution:  execution,
 		storage:    storage,
 		networkCfg: config,
@@ -41,28 +44,47 @@ func NewNetwork(ctx context.Context, execution execution.Execution, storage stor
 		p2p:        nil,
 		rpc:        nil,
 		grpc:       nil,
-	}
+	}, nil
 }
 
 func (network *NetworkModule) Start() {
-	p2p := NewP2P(network.ctx, network, network.networkCfg.Namespace, network.networkCfg.MaxPeers, network.networkCfg.Port)
+	p2p, err := NewP2P(network.ctx, network.errCh, network, network.networkCfg.Namespace, network.networkCfg.MaxPeers, network.networkCfg.Port)
+	if err != nil {
+		network.errCh <- err
+		return
+	}
+
 	network.p2p = p2p
+	go network.p2p.JoinNetwork()
+	go network.p2p.SubscribeTopics(network.networkCfg.Topics)
 
-	fmt.Println("(Network) Host ID:", p2p.host.ID())
-	fmt.Println("(Network) Host addresses:", p2p.host.Addrs())
+	grpc, err := NewGRPC(network.ctx, network.errCh, network.grpcCfg)
+	if err != nil {
+		network.errCh <- err
+		return
+	}
 
-	go p2p.JoinNetwork()
-	go p2p.SubscribeTopics(network.networkCfg.Topics)
-
-	grpc := NewGRPC(network.ctx, network.grpcCfg)
 	network.grpc = grpc
+	go network.grpc.Start()
 
-	go grpc.Start()
+	rpc, err := NewRPC(network.ctx, network)
+	if err != nil {
+		network.errCh <- err
+		return
+	}
 
-	rpc := NewRPC(network.ctx, network)
 	network.rpc = rpc
+	go network.rpc.Start()
+}
 
-	rpc.Start()
+// Shutdown gracefuly shutdowns network modules
+func (network *NetworkModule) Shutdown() error {
+	// TODO: add other modules shutdown
+	if err := network.grpc.Shutdown(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	return nil
 }
 
 func (network *NetworkModule) MessageHandler(message string, source Source) {

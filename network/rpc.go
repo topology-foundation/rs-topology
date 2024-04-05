@@ -12,11 +12,11 @@ type RPC struct {
 	mediator NetworkMediator
 }
 
-func NewRPC(ctx context.Context, mediator NetworkMediator) *RPC {
+func NewRPC(ctx context.Context, mediator NetworkMediator) (*RPC, error) {
 	return &RPC{
 		ctx:      ctx,
 		mediator: mediator,
-	}
+	}, nil
 }
 
 func (rpc *RPC) Start() {

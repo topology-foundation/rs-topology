@@ -38,16 +38,15 @@ type AppConfig struct {
 func LoadConfig() (*AppConfig, error) {
 	flag.Parse()
 
-	cfg := &AppConfig{}
-
 	file, err := os.Open(*configPath)
 	if err != nil {
-		return cfg, err
+		return nil, err
 	}
 	defer file.Close()
 
+	cfg := &AppConfig{}
 	if err = json.NewDecoder(file).Decode(cfg); err != nil {
-		return cfg, err
+		return nil, err
 	}
 
 	return cfg, nil
