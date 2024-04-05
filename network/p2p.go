@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
+	"github.com/topology-gg/gram/config"
 )
 
 type P2P struct {
@@ -22,10 +23,17 @@ type P2P struct {
 	maxPeers  int
 	port      int
 	pubsub    *pubsub.PubSub
-	topics    map[string]*pubsub.Topic
+	streams   []Stream
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, maxPeers int, port int) *P2P {
+type Stream struct {
+	name         string
+	topic        *pubsub.Topic
+	subscription *pubsub.Subscription
+}
+
+func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig) *P2P {
+	namespace, maxPeers, port := cfg.Namespace, cfg.MaxPeers, cfg.Port
 
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
@@ -39,6 +47,12 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, max
 		panic(err)
 	}
 
+	streams := make([]Stream, len(cfg.Topics))
+
+	for i, name := range cfg.Topics {
+		streams[i] = Stream{name: name}
+	}
+
 	return &P2P{
 		ctx:       ctx,
 		mediator:  mediator,
@@ -47,47 +61,51 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, namespace string, max
 		maxPeers:  maxPeers,
 		port:      port,
 		pubsub:    gossipsub,
-		topics:    make(map[string]*pubsub.Topic),
+		streams:   streams,
 	}
 }
 
-func (p2p *P2P) JoinNetwork() {
+func (p2p *P2P) Start() {
+	p2p.joinNetwork()
+	p2p.subscribeTopics()
+}
+
+func (p2p *P2P) Publish(message string) {
+	for i := range p2p.streams {
+		if err := p2p.streams[i].topic.Publish(p2p.ctx, []byte(message)); err != nil {
+			fmt.Println("(Network) Failed to publish to topic:", p2p.streams[i].name, err)
+		}
+	}
+}
+
+func (p2p *P2P) joinNetwork() {
 	kademliaDHT := p2p.getKademliaDHT()
 	routingDiscovery := drouting.NewRoutingDiscovery(kademliaDHT)
 	dutil.Advertise(p2p.ctx, routingDiscovery, p2p.namespace)
 	p2p.connectPeers(routingDiscovery)
+
 	fmt.Println("(Network) Successfully joinned network:", p2p.namespace)
 }
 
-func (p2p *P2P) SubscribeTopics(topics []string) {
-	for i := range topics {
-		if _, isExist := p2p.topics[topics[i]]; isExist {
-			fmt.Println("(Network) Already subscribed to gossipsub topic:", topics[i])
-			continue
-		}
-
-		pubsubTopic, err := p2p.pubsub.Join(topics[i])
+func (p2p *P2P) subscribeTopics() {
+	for i := range p2p.streams {
+		topic, err := p2p.pubsub.Join(p2p.streams[i].name)
 		if err != nil {
 			panic(err)
 		}
 
-		p2p.topics[topics[i]] = pubsubTopic
+		p2p.streams[i].topic = topic
 
-		subscription, err := pubsubTopic.Subscribe()
+		subscription, err := topic.Subscribe()
 		if err != nil {
 			panic(err)
 		}
+
+		p2p.streams[i].subscription = subscription
 
 		go p2p.p2pMessageHandler(subscription)
-		fmt.Println("(Network) Successfully subscribed to gossipsub topic:", topics[i])
-	}
-}
 
-func (p2p *P2P) Publish(message string) {
-	for topic, pubsubTopic := range p2p.topics {
-		if err := pubsubTopic.Publish(p2p.ctx, []byte(message)); err != nil {
-			fmt.Println("(Network) Failed to publish to topic:", topic, err)
-		}
+		fmt.Println("(Network) Successfully subscribed to gossipsub topic:", p2p.streams[i].name)
 	}
 }
 
