@@ -1,8 +1,5 @@
 {
     "networkConfig": {
-        "grpcConfig": {
-            "port": 1312
-        },
         "p2pConfig": {
             "namespace": "gram-namespace",
             "topics": [
@@ -10,6 +7,9 @@
             ],
             "maxPeers": 1,
             "port": 1319
+        },
+        "grpcConfig": {
+            "port": 1312
         },
         "rpcConfig": {
             "port": 8080

@@ -23,15 +23,15 @@ type StorageConfig struct {
 	DatabasePath string `json:"databasePath"`
 }
 
-type GrpcConfig struct {
-	Port int `json:"port"`
-}
-
 type P2pConfig struct {
 	Namespace string   `json:"namespace"`
 	Topics    []string `json:"topics"`
 	MaxPeers  int      `json:"maxPeers"`
 	Port      int      `json:"port"`
+}
+
+type GrpcConfig struct {
+	Port int `json:"port"`
 }
 
 type RpcConfig struct {
@@ -40,8 +40,8 @@ type RpcConfig struct {
 
 type AppConfig struct {
 	Execution ExecutionConfig `json:"executionConfig"`
-	Storage   StorageConfig   `json:"storageConfig"`
 	Network   NetworkConfig   `json:"networkConfig"`
+	Storage   StorageConfig   `json:"storageConfig"`
 }
 
 func LoadConfig() (*AppConfig, error) {

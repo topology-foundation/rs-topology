@@ -14,8 +14,8 @@ type NetworkModule struct {
 	execution execution.Execution
 	storage   storage.Storage
 	p2p       *P2P
-	rpc       *RPC
 	grpc      *GRPC
+	rpc       *RPC
 	cfg       *config.NetworkConfig
 }
 
