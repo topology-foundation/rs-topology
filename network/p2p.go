@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/libp2p/go-libp2p"
@@ -23,7 +24,12 @@ type P2P struct {
 	maxPeers  int
 	port      int
 	pubsub    *pubsub.PubSub
-	topics    map[string]*pubsub.Topic
+	topics    []Topic
+}
+
+type Topic struct {
+	Name        string
+	PubsubTopic *pubsub.Topic
 }
 
 func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig) *P2P {
@@ -41,6 +47,12 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig
 		panic(err)
 	}
 
+	topics := make([]Topic, len(cfg.Topics))
+
+	for _, topicName := range cfg.Topics {
+		topics = append(topics, Topic{Name: topicName})
+	}
+
 	return &P2P{
 		ctx:       ctx,
 		mediator:  mediator,
@@ -49,7 +61,7 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig
 		maxPeers:  maxPeers,
 		port:      port,
 		pubsub:    gossipsub,
-		topics:    make(map[string]*pubsub.Topic),
+		topics:    topics,
 	}
 }
 
@@ -58,22 +70,30 @@ func (p2p *P2P) JoinNetwork() {
 	routingDiscovery := drouting.NewRoutingDiscovery(kademliaDHT)
 	dutil.Advertise(p2p.ctx, routingDiscovery, p2p.namespace)
 	p2p.connectPeers(routingDiscovery)
+
+	var topicNames []string
+	for _, topic := range p2p.topics {
+		topicNames = append(topicNames, topic.Name)
+	}
+	p2p.SubscribeTopics(topicNames)
+
 	fmt.Println("(Network) Successfully joinned network:", p2p.namespace)
 }
 
 func (p2p *P2P) SubscribeTopics(topics []string) {
 	for i := range topics {
-		if _, isExist := p2p.topics[topics[i]]; isExist {
-			fmt.Println("(Network) Already subscribed to gossipsub topic:", topics[i])
-			continue
-		}
 
 		pubsubTopic, err := p2p.pubsub.Join(topics[i])
 		if err != nil {
-			panic(err)
+			if strings.Contains(err.Error(), "topic already exists") {
+				fmt.Println("(Network) Already subscribed to gossipsub topic:", topics[i])
+				continue
+			} else {
+				panic(err)
+			}
 		}
 
-		p2p.topics[topics[i]] = pubsubTopic
+		p2p.topics[i].PubsubTopic = pubsubTopic
 
 		subscription, err := pubsubTopic.Subscribe()
 		if err != nil {
@@ -86,9 +106,9 @@ func (p2p *P2P) SubscribeTopics(topics []string) {
 }
 
 func (p2p *P2P) Publish(message string) {
-	for topic, pubsubTopic := range p2p.topics {
-		if err := pubsubTopic.Publish(p2p.ctx, []byte(message)); err != nil {
-			fmt.Println("(Network) Failed to publish to topic:", topic, err)
+	for _, topic := range p2p.topics {
+		if err := topic.PubsubTopic.Publish(p2p.ctx, []byte(message)); err != nil {
+			fmt.Println("(Network) Failed to publish to topic:", topic.Name, err)
 		}
 	}
 }

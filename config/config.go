@@ -19,19 +19,19 @@ type NetworkConfig struct {
 	Rpc  RpcConfig  `json:"rpcConfig"`
 }
 
-type P2pConfig struct {
-	Namespace string   `json:"namespace"`
-	Topics    []string `json:"topics"`
-	MaxPeers  int      `json:"maxPeers"`
-	Port      int      `json:"port"`
-}
-
 type StorageConfig struct {
 	DatabasePath string `json:"databasePath"`
 }
 
 type GrpcConfig struct {
 	Port int `json:"port"`
+}
+
+type P2pConfig struct {
+	Namespace string   `json:"namespace"`
+	Topics    []string `json:"topics"`
+	MaxPeers  int      `json:"maxPeers"`
+	Port      int      `json:"port"`
 }
 
 type RpcConfig struct {

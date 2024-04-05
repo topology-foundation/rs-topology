@@ -31,15 +31,12 @@ const (
 )
 
 func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) *NetworkModule {
-
 	network := &NetworkModule{
 		ctx:       ctx,
 		execution: execution,
 		storage:   storage,
 		cfg:       config,
 	}
-
-	fmt.Println(config)
 
 	network.p2p = NewP2P(ctx, network, &config.P2p)
 	network.grpc = NewGRPC(ctx, &config.Grpc)
@@ -57,10 +54,7 @@ func (network *NetworkModule) Start() {
 	fmt.Println("(Network) Host addresses:", p2p.host.Addrs())
 
 	go p2p.JoinNetwork()
-	go network.p2p.SubscribeTopics(network.cfg.P2p.Topics)
-
 	go grpc.Start()
-
 	rpc.Start()
 }
 
