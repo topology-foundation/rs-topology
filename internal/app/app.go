@@ -43,9 +43,7 @@ func Gram() {
 	moduleErr := <-ch
 	fmt.Fprintln(os.Stderr, moduleErr)
 
-	if err := network.Shutdown(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	network.Shutdown()
 
 	if err := storage.Close(); err != nil {
 		fmt.Fprintln(os.Stderr, err)

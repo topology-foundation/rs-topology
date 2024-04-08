@@ -68,7 +68,7 @@ func (network *NetworkModule) Start() {
 }
 
 // Shutdown gracefuly shutdowns network modules
-func (network *NetworkModule) Shutdown() error {
+func (network *NetworkModule) Shutdown() {
 	if err := network.rpc.Shutdown(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -77,7 +77,9 @@ func (network *NetworkModule) Shutdown() error {
 		fmt.Fprintln(os.Stderr, err)
 	}
 
-	return nil
+	if err := network.p2p.Shutdown(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 func (network *NetworkModule) MessageHandler(message string, source Source) {

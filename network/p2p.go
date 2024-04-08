@@ -213,3 +213,13 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 		p2p.mediator.MessageHandler(string(message.Message.Data), SourceP2P)
 	}
 }
+
+// Shutdown gracefuly shutdowns p2p communication
+func (p2p *P2P) Shutdown() error {
+	if err := p2p.host.Close(); err != nil {
+		return err
+	}
+
+	fmt.Println("P2P host successfully shutted down")
+	return nil
+}
