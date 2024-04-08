@@ -3,6 +3,7 @@ package network
 import (
 	"bufio"
 	"context"
+	"io"
 	"os"
 )
 
@@ -29,6 +30,9 @@ func (rpc *RPC) rpcMessageHandler() {
 
 	for {
 		message, err := reader.ReadString('\n')
+		if err == io.EOF {
+			continue
+		}
 		if err != nil {
 			panic(err)
 		}
