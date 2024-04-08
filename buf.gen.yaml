@@ -1,0 +1,12 @@
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/topology-foundation/gram/proto/gen
+plugins:
+  - plugin: buf.build/protocolbuffers/go
+    out: proto/gen
+    opt: paths=source_relative
+  - plugin: buf.build/grpc/go
+    out: proto/gen
+    opt: paths=source_relative

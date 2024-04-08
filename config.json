@@ -13,5 +13,8 @@
     },
     "storageConfig": {
         "databasePath": "gram-database"
+    },
+    "grpcConfig": {
+        "port": 1312
     }
 }

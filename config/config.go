@@ -25,10 +25,15 @@ type StorageConfig struct {
 	DatabasePath string `json:"databasePath"`
 }
 
+type GrpcConfig struct {
+	Port int `json:"port"`
+}
+
 type AppConfig struct {
 	Execution ExecutionConfig `json:"executionConfig"`
 	Network   NetworkConfig   `json:"networkConfig"`
 	Storage   StorageConfig   `json:"storageConfig"`
+	Grpc      GrpcConfig      `json:"grpcConfig"`
 }
 
 func LoadConfig() (*AppConfig, error) {
