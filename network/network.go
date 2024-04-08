@@ -10,14 +10,12 @@ import (
 )
 
 type NetworkModule struct {
-	ctx        context.Context
-	execution  execution.Execution
-	storage    storage.Storage
-	networkCfg *config.NetworkConfig
-	grpcCfg    *config.GrpcConfig
-	p2p        *P2P
-	rpc        *RPC
-	grpc       *GRPC
+	ctx       context.Context
+	execution execution.Execution
+	storage   storage.Storage
+	p2p       *P2P
+	grpc      *GRPC
+	rpc       *RPC
 }
 
 type NetworkMediator interface {
@@ -31,37 +29,30 @@ const (
 	SourceRPC
 )
 
-func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig, grpcCfg *config.GrpcConfig) *NetworkModule {
-	return &NetworkModule{
-		ctx:        ctx,
-		execution:  execution,
-		storage:    storage,
-		networkCfg: config,
-		grpcCfg:    grpcCfg,
-		p2p:        nil,
-		rpc:        nil,
-		grpc:       nil,
+func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) *NetworkModule {
+	network := &NetworkModule{
+		ctx:       ctx,
+		execution: execution,
+		storage:   storage,
 	}
+
+	network.p2p = NewP2P(ctx, network, &config.P2p)
+	network.grpc = NewGRPC(ctx, &config.Grpc)
+	network.rpc = NewRPC(ctx, network, &config.Rpc)
+
+	return network
 }
 
 func (network *NetworkModule) Start() {
-	p2p := NewP2P(network.ctx, network, network.networkCfg.Namespace, network.networkCfg.MaxPeers, network.networkCfg.Port, network.networkCfg.BootstrapNodes)
-	network.p2p = p2p
+	p2p := network.p2p
+	grpc := network.grpc
+	rpc := network.rpc
 
 	fmt.Println("(Network) Host ID:", p2p.host.ID())
 	fmt.Println("(Network) Host addresses:", p2p.host.Addrs())
 
-	go p2p.JoinNetwork()
-	go p2p.SubscribeTopics(network.networkCfg.Topics)
-
-	grpc := NewGRPC(network.ctx, network.grpcCfg)
-	network.grpc = grpc
-
+	go p2p.Start()
 	go grpc.Start()
-
-	rpc := NewRPC(network.ctx, network)
-	network.rpc = rpc
-
 	rpc.Start()
 }
 
