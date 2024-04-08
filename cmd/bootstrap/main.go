@@ -10,7 +10,13 @@ import (
 
 func main() {
 	ctx := context.Background()
-	listenAddr := "/ip4/0.0.0.0/tcp/4001"
+
+	defaultPort := "4001"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%s", port)
 
 	bootstrapNode, err := bootstrap.New(ctx, listenAddr)
 	if err != nil {
