@@ -14,17 +14,9 @@ type ExecutionConfig struct {
 }
 
 type NetworkConfig struct {
-<<<<<<< HEAD
-	Namespace      string   `json:"namespace"`
-	Topics         []string `json:"topics"`
-	MaxPeers       int      `json:"maxPeers"`
-	Port           int      `json:"port"`
-	BootstrapNodes []string `json:"bootstrapNodes"`
-=======
 	P2p  P2pConfig  `json:"p2pConfig"`
 	Grpc GrpcConfig `json:"grpcConfig"`
 	Rpc  RpcConfig  `json:"rpcConfig"`
->>>>>>> upstream/develop
 }
 
 type StorageConfig struct {
@@ -32,10 +24,11 @@ type StorageConfig struct {
 }
 
 type P2pConfig struct {
-	Namespace string   `json:"namespace"`
-	Topics    []string `json:"topics"`
-	MaxPeers  int      `json:"maxPeers"`
-	Port      int      `json:"port"`
+	Namespace      string   `json:"namespace"`
+	Topics         []string `json:"topics"`
+	MaxPeers       int      `json:"maxPeers"`
+	Port           int      `json:"port"`
+	BootstrapNodes []string `json:"bootstrapNodes"`
 }
 
 type GrpcConfig struct {
