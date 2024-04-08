@@ -8,6 +8,7 @@ gram:
 	
 .PHONY: bootstrap
 bootstrap:
+	go mod tidy
 	go build -o ./bin/bootstrap ./cmd/bootstrap/main.go
 	@echo "Finished building Bootstrap node. Run \"./bin/bootstrap\" to launch the Bootstrap node."
 
