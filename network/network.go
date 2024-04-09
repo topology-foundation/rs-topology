@@ -6,6 +6,7 @@ import (
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
+	"github.com/topology-gg/gram/log"
 	"github.com/topology-gg/gram/storage"
 )
 
@@ -48,8 +49,8 @@ func (network *NetworkModule) Start() {
 	grpc := network.grpc
 	rpc := network.rpc
 
-	fmt.Println("(Network) Host ID:", p2p.host.ID())
-	fmt.Println("(Network) Host addresses:", p2p.host.Addrs())
+	log.Info("(Network)", "hostId", p2p.host.ID())
+	log.Info("(Network)", "hostAddresses", p2p.host.Addrs())
 
 	go p2p.Start()
 	go grpc.Start()
@@ -61,7 +62,7 @@ func (network *NetworkModule) MessageHandler(message string, source Source) {
 		message = fmt.Sprintf("%s: %s", network.p2p.host.ID().String(), message)
 	}
 
-	fmt.Printf("(Network) %s", message)
+	log.Info("(Network)", "message", message)
 
 	network.execution.Execute(message)
 

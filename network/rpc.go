@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/log"
 )
 
 type RPC struct {
@@ -34,7 +35,7 @@ func NewRPC(ctx context.Context, mediator NetworkMediator, config *config.RpcCon
 }
 
 func (rpc *RPC) Start() {
-	fmt.Println("Starting RPC server on", rpc.server.Addr)
+    log.Info("(RPC Server)", "address", rpc.server.Addr)
 	if err := rpc.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
@@ -69,10 +70,10 @@ func (rpc *RPC) rpcMessageHandler(w http.ResponseWriter, req *http.Request) {
 
 func (rpc *RPC) Shutdown() error {
 	if err := rpc.server.Shutdown(rpc.ctx); err != nil {
-		fmt.Printf("RPC server shutdown error: %v\n", err)
+        log.Error("(RPC server) Shutdown error", "error", err)
 		return err
 	} else {
-		fmt.Println("RPC server successfully shut down")
+		log.Info("(RPC server) Successfully shut down")
 		return nil
 	}
 }

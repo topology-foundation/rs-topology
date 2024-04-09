@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/log"
 	helloPb "github.com/topology-gg/gram/proto/gen/gram/base"
 	"google.golang.org/grpc"
 )
@@ -16,7 +17,7 @@ type helloServer struct {
 }
 
 func (s *helloServer) SayHello(ctx context.Context, in *helloPb.HelloRequest) (*helloPb.HelloResponse, error) {
-	fmt.Printf("Received greet from %s", in.GetName())
+    log.Info("Received greet", "name", in.GetName())
 	return &helloPb.HelloResponse{Name: "Hello " + in.GetName()}, nil
 }
 
@@ -45,7 +46,7 @@ func (g *GRPC) Start() {
 	server := grpc.NewServer()
 
 	helloPb.RegisterServiceServer(server, &helloServer{})
-	fmt.Printf("GRPC Server is listening on port: %v\n", listener.Addr())
+    log.Info("(GRPC Server)", "address", listener.Addr())
 
 	if err := server.Serve(listener); err != nil {
 		panic(err)

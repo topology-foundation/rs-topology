@@ -8,6 +8,7 @@ import (
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
 	"github.com/topology-gg/gram/internal/app"
+	"github.com/topology-gg/gram/log"
 	"github.com/topology-gg/gram/network"
 	"github.com/topology-gg/gram/storage"
 )
@@ -38,6 +39,7 @@ func gram() error {
 	storage := storage.NewStorage(ctx, &cfg.Storage)
 	execution := execution.NewExecution(ctx, storage, &cfg.Execution)
 	network := network.NewNetwork(ctx, execution, storage, &cfg.Network)
+	log.SetDefault(&cfg.Log)
 
 	network.Start()
 
