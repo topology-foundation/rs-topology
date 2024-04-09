@@ -19,7 +19,7 @@ func Gram() {
 	ctx := context.Background()
 
 	// load configuration from file
-	cfg, err := config.LoadConfig()
+	cfg, err := config.LoadConfig[config.AppConfig]()
 	logErrorAndPanic(err)
 
 	ch := make(chan error)

@@ -44,7 +44,7 @@ type AppConfig struct {
 	Storage   StorageConfig   `json:"storageConfig"`
 }
 
-func LoadConfig() (*AppConfig, error) {
+func LoadConfig[T any]() (*T, error) {
 	flag.Parse()
 
 	file, err := os.Open(*configPath)
@@ -53,10 +53,10 @@ func LoadConfig() (*AppConfig, error) {
 	}
 	defer file.Close()
 
-	cfg := &AppConfig{}
-	if err = json.NewDecoder(file).Decode(cfg); err != nil {
+	var cfg T
+	if err = json.NewDecoder(file).Decode(&cfg); err != nil {
 		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }
