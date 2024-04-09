@@ -11,15 +11,17 @@ import (
 
 type RPC struct {
 	ctx      context.Context
+	errCh    chan error
 	mediator NetworkMediator
 	server   *http.Server
 	mux      *http.ServeMux
 }
 
-func NewRPC(ctx context.Context, mediator NetworkMediator, config *config.RpcConfig) *RPC {
+func NewRPC(ctx context.Context, errCh chan error, mediator NetworkMediator, config *config.RpcConfig) (*RPC, error) {
 	mux := http.NewServeMux()
 	rpc := &RPC{
 		ctx:      ctx,
+		errCh:    errCh,
 		mediator: mediator,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", config.Port),
@@ -30,13 +32,14 @@ func NewRPC(ctx context.Context, mediator NetworkMediator, config *config.RpcCon
 
 	mux.HandleFunc("/rpc", rpc.rpcMessageHandler)
 
-	return rpc
+	return rpc, nil
 }
 
 func (rpc *RPC) Start() {
 	fmt.Println("Starting RPC server on", rpc.server.Addr)
 	if err := rpc.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		panic(err)
+		rpc.errCh <- err
+		return
 	}
 }
 
@@ -69,10 +72,9 @@ func (rpc *RPC) rpcMessageHandler(w http.ResponseWriter, req *http.Request) {
 
 func (rpc *RPC) Shutdown() error {
 	if err := rpc.server.Shutdown(rpc.ctx); err != nil {
-		fmt.Printf("RPC server shutdown error: %v\n", err)
 		return err
-	} else {
-		fmt.Println("RPC server successfully shut down")
-		return nil
 	}
+
+	fmt.Println("RPC server successfully shutted down")
+	return nil
 }

@@ -23,31 +23,42 @@ func (s *helloServer) SayHello(ctx context.Context, in *helloPb.HelloRequest) (*
 // GRPC represents a struct for GRPC server
 type GRPC struct {
 	ctx    context.Context
+	errCh  chan error
 	config *config.GrpcConfig
+	server *grpc.Server
 }
 
 // NewGRPC creates a new grpc server struct
-func NewGRPC(ctx context.Context, config *config.GrpcConfig) *GRPC {
+func NewGRPC(ctx context.Context, errCh chan error, config *config.GrpcConfig) (*GRPC, error) {
 	return &GRPC{
 		ctx:    ctx,
+		errCh:  errCh,
 		config: config,
-	}
+	}, nil
 }
 
 // Start starts a GRPC server
 func (g *GRPC) Start() {
-	// TODO: read port from config
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", g.config.Port))
 	if err != nil {
-		panic(err)
+		g.errCh <- err
+		return
 	}
 
-	server := grpc.NewServer()
+	g.server = grpc.NewServer()
 
-	helloPb.RegisterServiceServer(server, &helloServer{})
+	helloPb.RegisterServiceServer(g.server, &helloServer{})
 	fmt.Printf("GRPC Server is listening on port: %v\n", listener.Addr())
 
-	if err := server.Serve(listener); err != nil {
-		panic(err)
+	if err := g.server.Serve(listener); err != nil {
+		g.errCh <- err
 	}
+}
+
+// Shutdown gracefuly shutdowns grpc server
+func (g *GRPC) Shutdown() error {
+	g.server.GracefulStop()
+
+	fmt.Println("GRPC server successfully shutted down")
+	return nil
 }
