@@ -31,11 +31,11 @@ func (h *emptyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 }
 
 type Handler struct {
-	mu       sync.Mutex
-	wr       io.Writer
-	lvl      slog.Level
-	useColor bool
-	attrs    []slog.Attr
+	mu           sync.Mutex
+	wr           io.Writer
+	lvl          slog.Level
+	useColor     bool
+	attrs        []slog.Attr
 	fieldPadding map[string]int
 
 	buf []byte

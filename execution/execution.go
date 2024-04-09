@@ -26,7 +26,7 @@ func NewExecution(ctx context.Context, storage storage.Storage, config *config.E
 func (execution *ExecutionModule) Execute(message string) {
 	// TODO: Proper message handling comes here.
 
-    log.Info("(Execution)", "message", message)
+	log.Info("(Execution)", "message", message)
 	kv := strings.Split(message, ": ")
 	_ = execution.storage.Set([]byte(kv[0]), []byte(kv[1]))
 }

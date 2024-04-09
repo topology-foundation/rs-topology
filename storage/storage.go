@@ -51,7 +51,7 @@ func (storage *StorageModule) Get(key []byte) ([]byte, error) {
 }
 
 func (storage *StorageModule) Set(key, value []byte) error {
-    log.Info("(Storage)", "key", key, "value", value)
+	log.Info("(Storage)", "key", key, "value", value)
 
 	return storage.db.Set(key, value, pebble.Sync)
 }

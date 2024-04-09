@@ -16,8 +16,8 @@ func init() {
 
 // SetDefault sets the default global logger
 func SetDefault(config *config.LogConfig) {
-    level := StringLevel(config.LogLevel)
-    l := NewLogger(NewHandler(os.Stdout, level, true))
+	level := StringLevel(config.LogLevel)
+	l := NewLogger(NewHandler(os.Stdout, level, true))
 
 	root.Store(l)
 	if lg, ok := l.(*logger); ok {

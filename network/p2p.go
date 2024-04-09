@@ -74,7 +74,7 @@ func (p2p *P2P) Start() {
 func (p2p *P2P) Publish(message string) {
 	for i := range p2p.streams {
 		if err := p2p.streams[i].topic.Publish(p2p.ctx, []byte(message)); err != nil {
-            log.Error("(Network) Failed to publish to topic", "topic", p2p.streams[i].name, "error", err)
+			log.Error("(Network) Failed to publish to topic", "topic", p2p.streams[i].name, "error", err)
 		}
 	}
 }
@@ -85,7 +85,7 @@ func (p2p *P2P) joinNetwork() {
 	dutil.Advertise(p2p.ctx, routingDiscovery, p2p.namespace)
 	p2p.connectPeers(routingDiscovery)
 
-    log.Info("(Network) Successfully joined network", "namespace", p2p.namespace)
+	log.Info("(Network) Successfully joined network", "namespace", p2p.namespace)
 }
 
 func (p2p *P2P) subscribeTopics() {
@@ -106,7 +106,7 @@ func (p2p *P2P) subscribeTopics() {
 
 		go p2p.p2pMessageHandler(subscription)
 
-        log.Info("(Network) Successfully subscribed to gossipsub topic", "topic", p2p.streams[i].name)
+		log.Info("(Network) Successfully subscribed to gossipsub topic", "topic", p2p.streams[i].name)
 	}
 }
 
@@ -131,9 +131,9 @@ func (p2p *P2P) getKademliaDHT() *dht.IpfsDHT {
 			defer wg.Done()
 
 			if err := p2p.host.Connect(p2p.ctx, *peerInfo); err != nil {
-                log.Error("(Network) Failed to connect to bootstrap node", "error", err)
+				log.Error("(Network) Failed to connect to bootstrap node", "error", err)
 			} else {
-                log.Info("(Network) Successfully connected to bootstrap node", "peerInfo", peerInfo)
+				log.Info("(Network) Successfully connected to bootstrap node", "peerInfo", peerInfo)
 			}
 		}()
 
@@ -149,7 +149,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 	isConnected := false
 
 	for !isConnected {
-        log.Info("(Network) Searching for peers to connect...")
+		log.Info("(Network) Searching for peers to connect...")
 
 		peerInfoChan, err := routingDiscovery.FindPeers(p2p.ctx, p2p.namespace)
 		if err != nil {
@@ -162,11 +162,11 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 			}
 
 			if err := p2p.host.Connect(p2p.ctx, peerInfo); err != nil {
-                log.Error("(Network) Failed to connect to peer", "error", err)
+				log.Error("(Network) Failed to connect to peer", "error", err)
 			} else {
 				peers += 1
 				isConnected = true
-                log.Info("(Network) Successfully connected to peer", "peerInfo", peerInfo)
+				log.Info("(Network) Successfully connected to peer", "peerInfo", peerInfo)
 			}
 
 			if peers >= p2p.maxPeers {
@@ -175,7 +175,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 		}
 	}
 
-    log.Info("(Network) Connecting peers is completed")
+	log.Info("(Network) Connecting peers is completed")
 }
 
 func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {

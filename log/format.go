@@ -55,7 +55,7 @@ func (h *Handler) format(buf []byte, r slog.Record, usecolor bool) []byte {
 		b.WriteString(LevelString(r.Level))
 	}
 	b.WriteString("[")
-    b.WriteString(r.Time.Format(timeFormat))
+	b.WriteString(r.Time.Format(timeFormat))
 	b.WriteString("] ")
 	b.WriteString(msg)
 

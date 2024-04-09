@@ -35,7 +35,7 @@ func NewRPC(ctx context.Context, mediator NetworkMediator, config *config.RpcCon
 }
 
 func (rpc *RPC) Start() {
-    log.Info("(RPC Server)", "address", rpc.server.Addr)
+	log.Info("(RPC Server)", "address", rpc.server.Addr)
 	if err := rpc.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
@@ -70,7 +70,7 @@ func (rpc *RPC) rpcMessageHandler(w http.ResponseWriter, req *http.Request) {
 
 func (rpc *RPC) Shutdown() error {
 	if err := rpc.server.Shutdown(rpc.ctx); err != nil {
-        log.Error("(RPC server) Shutdown error", "error", err)
+		log.Error("(RPC server) Shutdown error", "error", err)
 		return err
 	} else {
 		log.Info("(RPC server) Successfully shut down")

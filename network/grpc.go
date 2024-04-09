@@ -17,7 +17,7 @@ type helloServer struct {
 }
 
 func (s *helloServer) SayHello(ctx context.Context, in *helloPb.HelloRequest) (*helloPb.HelloResponse, error) {
-    log.Info("Received greet", "name", in.GetName())
+	log.Info("Received greet", "name", in.GetName())
 	return &helloPb.HelloResponse{Name: "Hello " + in.GetName()}, nil
 }
 
@@ -46,7 +46,7 @@ func (g *GRPC) Start() {
 	server := grpc.NewServer()
 
 	helloPb.RegisterServiceServer(server, &helloServer{})
-    log.Info("(GRPC Server)", "address", listener.Addr())
+	log.Info("(GRPC Server)", "address", listener.Addr())
 
 	if err := server.Serve(listener); err != nil {
 		panic(err)
