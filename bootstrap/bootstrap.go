@@ -23,7 +23,7 @@ func New(ctx context.Context, listenAddr string) (*Bootstrap, error) {
 
 	nodeHost, err := libp2p.New(libp2p.ListenAddrs(multiaddr))
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("creating host failed: %w", err)
 	}
 
 	return &Bootstrap{
