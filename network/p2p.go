@@ -217,11 +217,15 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 // Shutdown gracefuly shutdowns p2p communication
 func (p2p *P2P) Shutdown() error {
 	for i := range p2p.streams {
-		p2p.streams[i].subscription.Cancel()
+		if p2p.streams[i].subscription != nil {
+			p2p.streams[i].subscription.Cancel()
+		}
 
-		if err := p2p.streams[i].topic.Close(); err != nil {
-			// just log the error here, since we need to try to close other topics
-			fmt.Fprintln(os.Stderr, err)
+		if p2p.streams[i].topic != nil {
+			if err := p2p.streams[i].topic.Close(); err != nil {
+				// just log the error here, since we need to try to close other topics
+				fmt.Fprintln(os.Stderr, err)
+			}
 		}
 	}
 
