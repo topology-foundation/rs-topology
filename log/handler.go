@@ -35,7 +35,6 @@ type Handler struct {
 	writer       io.Writer
 	lvl          slog.Level
 	useColor     bool
-	attrs        []slog.Attr
 	fieldPadding map[string]int
 
 	buf []byte
