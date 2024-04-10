@@ -31,21 +31,18 @@ func (h *emptyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 }
 
 type Handler struct {
-	mutex        sync.Mutex
-	writer       io.Writer
-	lvl          slog.Level
-	useColor     bool
-	fieldPadding map[string]int
-
-	buf []byte
+	mutex    sync.Mutex
+	writer   io.Writer
+	lvl      slog.Level
+	useColor bool
+	buf      []byte
 }
 
 func NewHandler(writer io.Writer, lvl slog.Level, useColor bool) *Handler {
 	return &Handler{
-		writer:       writer,
-		lvl:          lvl,
-		useColor:     useColor,
-		fieldPadding: make(map[string]int),
+		writer:   writer,
+		lvl:      lvl,
+		useColor: useColor,
 	}
 }
 
