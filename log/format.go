@@ -47,7 +47,7 @@ func (h *Handler) format(buf []byte, r slog.Record, usecolor bool) []byte {
 }
 
 func (h *Handler) formatAttributes(buf *bytes.Buffer, r slog.Record, color string) {
-	writeAttr := func(attr slog.Attr, _, _ bool) {
+	writeAttr := func(attr slog.Attr) {
 		buf.WriteByte(' ')
 
 		if color != "" {
@@ -62,16 +62,10 @@ func (h *Handler) formatAttributes(buf *bytes.Buffer, r slog.Record, color strin
 		buf.WriteString(attr.Value.String())
 	}
 
-	var n = 0
-	var nAttrs = len(h.attrs) + r.NumAttrs()
-	for _, attr := range h.attrs {
-		writeAttr(attr, n == 0, n == nAttrs-1)
-		n++
-	}
 	r.Attrs(func(attr slog.Attr) bool {
-		writeAttr(attr, n == 0, n == nAttrs-1)
-		n++
+		writeAttr(attr)
 		return true
 	})
+
 	buf.WriteByte('\n')
 }
