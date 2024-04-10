@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	timeFormat        = "2006-01-02T15:04:05"
-	termMsgJust       = 40
+	timeFormat  = "2006-01-02T15:04:05"
+	termMsgJust = 40
 )
 
 func (h *Handler) format(buf []byte, r slog.Record, usecolor bool) []byte {
@@ -59,7 +59,7 @@ func (h *Handler) formatAttributes(buf *bytes.Buffer, r slog.Record, color strin
 			buf.WriteByte('=')
 		}
 
-        buf.WriteString(attr.Value.String())
+		buf.WriteString(attr.Value.String())
 	}
 
 	var n = 0
