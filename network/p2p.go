@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/libp2p/go-libp2p"
@@ -18,6 +19,7 @@ import (
 
 type P2P struct {
 	ctx       context.Context
+	errCh     chan error
 	mediator  NetworkMediator
 	host      host.Host
 	namespace string
@@ -33,19 +35,22 @@ type Stream struct {
 	subscription *pubsub.Subscription
 }
 
-func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig) *P2P {
+func NewP2P(ctx context.Context, errCh chan error, mediator NetworkMediator, cfg *config.P2pConfig) (*P2P, error) {
 	namespace, maxPeers, port := cfg.Namespace, cfg.MaxPeers, cfg.Port
 
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
 	host, err := libp2p.New(libp2p.ListenAddrStrings(listenAddr))
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+
+	fmt.Println("(Network) Host ID:", host.ID())
+	fmt.Println("(Network) Host addresses:", host.Addrs())
 
 	gossipsub, err := pubsub.NewGossipSub(ctx, host)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	streams := make([]Stream, len(cfg.Topics))
@@ -56,6 +61,7 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig
 
 	return &P2P{
 		ctx:       ctx,
+		errCh:     errCh,
 		mediator:  mediator,
 		host:      host,
 		namespace: namespace,
@@ -63,7 +69,7 @@ func NewP2P(ctx context.Context, mediator NetworkMediator, cfg *config.P2pConfig
 		port:      port,
 		pubsub:    gossipsub,
 		streams:   streams,
-	}
+	}, nil
 }
 
 func (p2p *P2P) Start() {
@@ -80,10 +86,20 @@ func (p2p *P2P) Publish(message string) {
 }
 
 func (p2p *P2P) joinNetwork() {
-	kademliaDHT := p2p.getKademliaDHT()
+	kademliaDHT, err := p2p.getKademliaDHT()
+	if err != nil {
+		p2p.errCh <- err
+		return
+	}
+
 	routingDiscovery := drouting.NewRoutingDiscovery(kademliaDHT)
 	dutil.Advertise(p2p.ctx, routingDiscovery, p2p.namespace)
-	p2p.connectPeers(routingDiscovery)
+
+	err = p2p.connectPeers(routingDiscovery)
+	if err != nil {
+		p2p.errCh <- err
+		return
+	}
 
 	log.Info("(Network) Successfully joined network", "namespace", p2p.namespace)
 }
@@ -92,14 +108,16 @@ func (p2p *P2P) subscribeTopics() {
 	for i := range p2p.streams {
 		topic, err := p2p.pubsub.Join(p2p.streams[i].name)
 		if err != nil {
-			panic(err)
+			p2p.errCh <- err
+			return
 		}
 
 		p2p.streams[i].topic = topic
 
 		subscription, err := topic.Subscribe()
 		if err != nil {
-			panic(err)
+			p2p.errCh <- err
+			return
 		}
 
 		p2p.streams[i].subscription = subscription
@@ -110,21 +128,21 @@ func (p2p *P2P) subscribeTopics() {
 	}
 }
 
-func (p2p *P2P) getKademliaDHT() *dht.IpfsDHT {
+func (p2p *P2P) getKademliaDHT() (*dht.IpfsDHT, error) {
 	kademliaDHT, err := dht.New(p2p.ctx, p2p.host)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	if err := kademliaDHT.Bootstrap(p2p.ctx); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var wg sync.WaitGroup
 	for i := range dht.DefaultBootstrapPeers {
 		peerInfo, err := peer.AddrInfoFromP2pAddr(dht.DefaultBootstrapPeers[i])
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
 		go func() {
@@ -141,10 +159,10 @@ func (p2p *P2P) getKademliaDHT() *dht.IpfsDHT {
 	}
 	wg.Wait()
 
-	return kademliaDHT
+	return kademliaDHT, nil
 }
 
-func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
+func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) error {
 	peers := 0
 	isConnected := false
 
@@ -153,7 +171,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 
 		peerInfoChan, err := routingDiscovery.FindPeers(p2p.ctx, p2p.namespace)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		for peerInfo := range peerInfoChan {
@@ -164,7 +182,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 			if err := p2p.host.Connect(p2p.ctx, peerInfo); err != nil {
 				log.Error("(Network) Failed to connect to peer", "error", err)
 			} else {
-				peers += 1
+				peers++
 				isConnected = true
 				log.Info("(Network) Successfully connected to peer", "peerInfo", peerInfo)
 			}
@@ -176,13 +194,16 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) {
 	}
 
 	log.Info("(Network) Connecting peers is completed")
+	return nil
 }
 
 func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 	for {
 		message, err := subscription.Next(p2p.ctx)
 		if err != nil {
-			panic(err)
+			// TODO: log error properly with logger
+			fmt.Fprintln(os.Stderr, err)
+			continue
 		}
 
 		sender := message.ReceivedFrom
@@ -192,4 +213,27 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 
 		p2p.mediator.MessageHandler(string(message.Message.Data), SourceP2P)
 	}
+}
+
+// Shutdown gracefuly shutdowns p2p communication
+func (p2p *P2P) Shutdown() error {
+	for i := range p2p.streams {
+		if p2p.streams[i].subscription != nil {
+			p2p.streams[i].subscription.Cancel()
+		}
+
+		if p2p.streams[i].topic != nil {
+			if err := p2p.streams[i].topic.Close(); err != nil {
+				// just log the error here, since we need to try to close other topics
+				fmt.Fprintln(os.Stderr, err)
+			}
+		}
+	}
+
+	if err := p2p.host.Close(); err != nil {
+		return err
+	}
+
+	fmt.Println("P2P host successfully shutted down")
+	return nil
 }

@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
@@ -12,6 +13,7 @@ import (
 
 type NetworkModule struct {
 	ctx       context.Context
+	errCh     chan error
 	execution execution.Execution
 	storage   storage.Storage
 	p2p       *P2P
@@ -30,31 +32,56 @@ const (
 	SourceRPC
 )
 
-func NewNetwork(ctx context.Context, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) *NetworkModule {
+func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) (*NetworkModule, error) {
 	network := &NetworkModule{
 		ctx:       ctx,
+		errCh:     errCh,
 		execution: execution,
 		storage:   storage,
 	}
 
-	network.p2p = NewP2P(ctx, network, &config.P2p)
-	network.grpc = NewGRPC(ctx, &config.Grpc)
-	network.rpc = NewRPC(ctx, network, &config.Rpc)
+	p2p, err := NewP2P(ctx, errCh, network, &config.P2p)
+	if err != nil {
+		return nil, err
+	}
 
-	return network
+	grpc, err := NewGRPC(ctx, errCh, &config.Grpc)
+	if err != nil {
+		return nil, err
+	}
+
+	rpc, err := NewRPC(ctx, errCh, network, &config.Rpc)
+	if err != nil {
+		return nil, err
+	}
+
+	network.p2p = p2p
+	network.grpc = grpc
+	network.rpc = rpc
+
+	return network, nil
 }
 
 func (network *NetworkModule) Start() {
-	p2p := network.p2p
-	grpc := network.grpc
-	rpc := network.rpc
+	go network.p2p.Start()
+	go network.grpc.Start()
+	go network.rpc.Start()
+}
 
-	log.Info("(Network)", "hostId", p2p.host.ID())
-	log.Info("(Network)", "hostAddresses", p2p.host.Addrs())
+// Shutdown gracefuly shutdowns network modules
+func (network *NetworkModule) Shutdown() {
+	if err := network.rpc.Shutdown(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 
-	go p2p.Start()
-	go grpc.Start()
-	rpc.Start()
+	if err := network.grpc.Shutdown(); err != nil {
+		log.Error("(Network) GRPC shutdown", "error", err)
+	}
+
+	if err := network.p2p.Shutdown(); err != nil {
+		log.Error("(Network) P2P shutdown", "error", err)
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 func (network *NetworkModule) MessageHandler(message string, source Source) {

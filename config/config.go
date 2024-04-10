@@ -49,20 +49,19 @@ type AppConfig struct {
 	Log       LogConfig       `json:"logConfig"`
 }
 
-func LoadConfig() (*AppConfig, error) {
+func LoadConfig[T any]() (*T, error) {
 	flag.Parse()
-
-	cfg := &AppConfig{}
 
 	file, err := os.Open(*configPath)
 	if err != nil {
-		return cfg, err
+		return nil, err
 	}
 	defer file.Close()
 
-	if err = json.NewDecoder(file).Decode(cfg); err != nil {
-		return cfg, err
+	var cfg T
+	if err = json.NewDecoder(file).Decode(&cfg); err != nil {
+		return nil, err
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }

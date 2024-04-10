@@ -15,12 +15,12 @@ type ExecutionModule struct {
 	config  *config.ExecutionConfig
 }
 
-func NewExecution(ctx context.Context, storage storage.Storage, config *config.ExecutionConfig) *ExecutionModule {
+func NewExecution(ctx context.Context, storage storage.Storage, config *config.ExecutionConfig) (*ExecutionModule, error) {
 	return &ExecutionModule{
 		ctx:     ctx,
 		storage: storage,
 		config:  config,
-	}
+	}, nil
 }
 
 func (execution *ExecutionModule) Execute(message string) {
