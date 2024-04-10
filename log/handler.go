@@ -31,8 +31,8 @@ func (h *emptyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 }
 
 type Handler struct {
-	mu           sync.Mutex
-	wr           io.Writer
+	mutex        sync.Mutex
+	writer       io.Writer
 	lvl          slog.Level
 	useColor     bool
 	attrs        []slog.Attr
@@ -41,20 +41,25 @@ type Handler struct {
 	buf []byte
 }
 
-func NewHandler(wr io.Writer, lvl slog.Level, useColor bool) *Handler {
+func NewHandler(writer io.Writer, lvl slog.Level, useColor bool) *Handler {
 	return &Handler{
-		wr:           wr,
+		writer:       writer,
 		lvl:          lvl,
 		useColor:     useColor,
 		fieldPadding: make(map[string]int),
 	}
 }
 
-func (h *Handler) Handle(_ context.Context, r slog.Record) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	buf := h.format(h.buf, r, h.useColor)
-	h.wr.Write(buf)
+func (h *Handler) Handle(_ context.Context, record slog.Record) error {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+	buf := h.format(h.buf, record, h.useColor)
+	_, err := h.writer.Write(buf)
+
+	if err != nil {
+		return err
+	}
+
 	h.buf = buf[:0]
 	return nil
 }

@@ -88,7 +88,10 @@ func (l *logger) Write(level slog.Level, msg string, attrs ...any) {
 
 	r := slog.NewRecord(time.Now(), level, msg, pcs[0])
 	r.Add(attrs...)
-	l.inner.Handler().Handle(context.Background(), r)
+	err := l.inner.Handler().Handle(context.Background(), r)
+	if err != nil {
+		Error("(Logger) Error writing a message", "error", err)
+	}
 }
 
 func (l *logger) Log(level slog.Level, msg string, attrs ...any) {
