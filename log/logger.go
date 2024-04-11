@@ -1,3 +1,5 @@
+// The code inside the `log` directory is a modified version of the [`go-ethereum` log](https://github.com/ethereum/go-ethereum/tree/bd91810462187086b2715fd343aa427e181d89a2/log)
+
 package log
 
 import (
