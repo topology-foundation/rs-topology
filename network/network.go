@@ -7,6 +7,9 @@ import (
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
+	grpc "github.com/topology-gg/gram/network/grpc"
+	p2p "github.com/topology-gg/gram/network/p2p"
+	rpc "github.com/topology-gg/gram/network/rpc"
 	"github.com/topology-gg/gram/storage"
 )
 
@@ -15,21 +18,10 @@ type NetworkModule struct {
 	errCh     chan error
 	execution execution.Execution
 	storage   storage.Storage
-	p2p       *P2P
-	grpc      *GRPC
-	rpc       *RPC
+	p2p       *p2p.P2P
+	grpc      *grpc.GRPC
+	rpc       *rpc.RPC
 }
-
-type NetworkMediator interface {
-	MessageHandler(message string, source Source)
-}
-
-type Source int
-
-const (
-	SourceP2P Source = iota
-	SourceRPC
-)
 
 func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execution, storage storage.Storage, config *config.NetworkConfig) (*NetworkModule, error) {
 	network := &NetworkModule{
@@ -39,17 +31,17 @@ func NewNetwork(ctx context.Context, errCh chan error, execution execution.Execu
 		storage:   storage,
 	}
 
-	p2p, err := NewP2P(ctx, errCh, network, &config.P2p)
+	p2p, err := p2p.NewP2P(ctx, errCh, execution, &config.P2p)
 	if err != nil {
 		return nil, err
 	}
 
-	grpc, err := NewGRPC(ctx, errCh, &config.Grpc)
+	grpc, err := grpc.NewGRPC(ctx, errCh, &config.Grpc)
 	if err != nil {
 		return nil, err
 	}
 
-	rpc, err := NewRPC(ctx, errCh, network, &config.Rpc)
+	rpc, err := rpc.NewRPC(ctx, errCh, execution, &config.Rpc, p2p)
 	if err != nil {
 		return nil, err
 	}
@@ -79,19 +71,5 @@ func (network *NetworkModule) Shutdown() {
 
 	if err := network.p2p.Shutdown(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-	}
-}
-
-func (network *NetworkModule) MessageHandler(message string, source Source) {
-	if source == SourceRPC {
-		message = fmt.Sprintf("%s: %s", network.p2p.host.ID().String(), message)
-	}
-
-	fmt.Printf("(Network) %s", message)
-
-	network.execution.Execute(message)
-
-	if source == SourceRPC {
-		network.p2p.Publish(message)
 	}
 }

@@ -1,4 +1,4 @@
-package network
+package grpc
 
 import (
 	"context"
@@ -9,16 +9,6 @@ import (
 	helloPb "github.com/topology-gg/gram/proto/gen/gram/base"
 	"google.golang.org/grpc"
 )
-
-// TODO: move server implementation to module specific folders
-type helloServer struct {
-	helloPb.UnimplementedServiceServer
-}
-
-func (s *helloServer) SayHello(ctx context.Context, in *helloPb.HelloRequest) (*helloPb.HelloResponse, error) {
-	fmt.Printf("Received greet from %s", in.GetName())
-	return &helloPb.HelloResponse{Name: "Hello " + in.GetName()}, nil
-}
 
 // GRPC represents a struct for GRPC server
 type GRPC struct {
