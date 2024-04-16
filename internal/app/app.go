@@ -7,6 +7,7 @@ import (
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
+	"github.com/topology-gg/gram/log"
 	"github.com/topology-gg/gram/network"
 	"github.com/topology-gg/gram/storage"
 	"github.com/topology-gg/gram/util"
@@ -14,8 +15,6 @@ import (
 
 // Gram configures initial values and bootstraps the project
 func Gram() {
-	fmt.Println("Starting gram node")
-
 	ctx := context.Background()
 
 	// load configuration from file
@@ -23,6 +22,11 @@ func Gram() {
 	logErrorAndPanic(err)
 
 	ch := make(chan error)
+
+	// setup the log
+	log.SetDefault(&cfg.Log)
+
+	log.Info("Starting gram node")
 
 	// instantiate modules
 	storage, err := storage.NewStorage(ctx, &cfg.Storage)
@@ -49,7 +53,7 @@ func Gram() {
 		fmt.Fprintln(os.Stderr, err)
 	}
 
-	fmt.Println("Shutting down gram")
+	log.Info("Shutting down gram")
 }
 
 // This is a private fucntion that is used only during app setup
@@ -59,6 +63,6 @@ func logErrorAndPanic(err error) {
 		return
 	}
 
-	fmt.Fprintln(os.Stderr, err)
+	log.Error("Error initializing gram", "error", err)
 	panic(err)
 }

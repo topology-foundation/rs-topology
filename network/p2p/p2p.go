@@ -3,7 +3,6 @@ package p2p
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/libp2p/go-libp2p"
@@ -15,6 +14,7 @@ import (
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
 	"github.com/topology-gg/gram/config"
 	ex "github.com/topology-gg/gram/execution"
+	"github.com/topology-gg/gram/log"
 )
 
 type P2P struct {
@@ -80,7 +80,7 @@ func (p2p *P2P) Start() {
 func (p2p *P2P) Publish(message string) {
 	for i := range p2p.streams {
 		if err := p2p.streams[i].topic.Publish(p2p.ctx, []byte(message)); err != nil {
-			fmt.Println("(Network) Failed to publish to topic:", p2p.streams[i].name, err)
+			log.Error("(Network) Failed to publish to topic", "topic", p2p.streams[i].name, "error", err)
 		}
 	}
 }
@@ -101,7 +101,7 @@ func (p2p *P2P) joinNetwork() {
 		return
 	}
 
-	fmt.Println("(Network) Successfully joinned network:", p2p.namespace)
+	log.Info("(Network) Successfully joined network", "namespace", p2p.namespace)
 }
 
 func (p2p *P2P) subscribeTopics() {
@@ -124,7 +124,7 @@ func (p2p *P2P) subscribeTopics() {
 
 		go p2p.p2pMessageHandler(subscription)
 
-		fmt.Println("(Network) Successfully subscribed to gossipsub topic:", p2p.streams[i].name)
+		log.Info("(Network) Successfully subscribed to gossipsub topic", "topic", p2p.streams[i].name)
 	}
 }
 
@@ -149,9 +149,9 @@ func (p2p *P2P) getKademliaDHT() (*dht.IpfsDHT, error) {
 			defer wg.Done()
 
 			if err := p2p.host.Connect(p2p.ctx, *peerInfo); err != nil {
-				fmt.Println("(Network) Failed to connect to bootstrap node:", err)
+				log.Error("(Network) Failed to connect to bootstrap node", "error", err)
 			} else {
-				fmt.Println("(Network) Successfully connected to bootstrap node:", peerInfo)
+				log.Info("(Network) Successfully connected to bootstrap node", "peerInfo", peerInfo)
 			}
 		}()
 
@@ -167,7 +167,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) error 
 	isConnected := false
 
 	for !isConnected {
-		fmt.Println("(Network) Searching for peers to connect...")
+		log.Info("(Network) Searching for peers to connect...")
 
 		peerInfoChan, err := routingDiscovery.FindPeers(p2p.ctx, p2p.namespace)
 		if err != nil {
@@ -180,11 +180,11 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) error 
 			}
 
 			if err := p2p.host.Connect(p2p.ctx, peerInfo); err != nil {
-				fmt.Println("(Network) Failed to connect to peer:", err)
+				log.Error("(Network) Failed to connect to peer", "error", err)
 			} else {
 				peers++
 				isConnected = true
-				fmt.Println("(Network) Successfully connected to peer:", peerInfo)
+				log.Info("(Network) Successfully connected to peer", "peerInfo", peerInfo)
 			}
 
 			if peers >= p2p.maxPeers {
@@ -193,7 +193,7 @@ func (p2p *P2P) connectPeers(routingDiscovery *drouting.RoutingDiscovery) error 
 		}
 	}
 
-	fmt.Println("(Network) Connecting peers is completed")
+	log.Info("(Network) Connecting peers is completed")
 	return nil
 }
 
@@ -201,8 +201,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 	for {
 		message, err := subscription.Next(p2p.ctx)
 		if err != nil {
-			// TODO: log error properly with logger
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("(Network) Error handling P2P message", "error", err)
 			continue
 		}
 
@@ -225,7 +224,7 @@ func (p2p *P2P) Shutdown() error {
 		if p2p.streams[i].topic != nil {
 			if err := p2p.streams[i].topic.Close(); err != nil {
 				// just log the error here, since we need to try to close other topics
-				fmt.Fprintln(os.Stderr, err)
+				log.Error("(Network) Error closing topic", "error", err)
 			}
 		}
 	}
@@ -234,7 +233,7 @@ func (p2p *P2P) Shutdown() error {
 		return err
 	}
 
-	fmt.Println("P2P host successfully shutted down")
+	log.Info("(Network) P2P host successfully shutted down")
 	return nil
 }
 

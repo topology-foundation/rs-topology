@@ -7,6 +7,7 @@ import (
 
 	"github.com/topology-gg/gram/config"
 	"github.com/topology-gg/gram/execution"
+	"github.com/topology-gg/gram/log"
 	grpc "github.com/topology-gg/gram/network/grpc"
 	p2p "github.com/topology-gg/gram/network/p2p"
 	rpc "github.com/topology-gg/gram/network/rpc"
@@ -66,10 +67,11 @@ func (network *NetworkModule) Shutdown() {
 	}
 
 	if err := network.grpc.Shutdown(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Error("(Network) GRPC shutdown", "error", err)
 	}
 
 	if err := network.p2p.Shutdown(); err != nil {
+		log.Error("(Network) P2P shutdown", "error", err)
 		fmt.Fprintln(os.Stderr, err)
 	}
 }
