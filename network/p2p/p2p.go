@@ -1,9 +1,8 @@
-package network
+package p2p
 
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/libp2p/go-libp2p"
@@ -14,13 +13,14 @@ import (
 	drouting "github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	dutil "github.com/libp2p/go-libp2p/p2p/discovery/util"
 	"github.com/topology-gg/gram/config"
+	ex "github.com/topology-gg/gram/execution"
 	"github.com/topology-gg/gram/log"
 )
 
 type P2P struct {
 	ctx       context.Context
 	errCh     chan error
-	mediator  NetworkMediator
+	executor  ex.Execution
 	host      host.Host
 	namespace string
 	maxPeers  int
@@ -35,7 +35,7 @@ type Stream struct {
 	subscription *pubsub.Subscription
 }
 
-func NewP2P(ctx context.Context, errCh chan error, mediator NetworkMediator, cfg *config.P2pConfig) (*P2P, error) {
+func NewP2P(ctx context.Context, errCh chan error, executor ex.Execution, cfg *config.P2pConfig) (*P2P, error) {
 	namespace, maxPeers, port := cfg.Namespace, cfg.MaxPeers, cfg.Port
 
 	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
@@ -62,7 +62,7 @@ func NewP2P(ctx context.Context, errCh chan error, mediator NetworkMediator, cfg
 	return &P2P{
 		ctx:       ctx,
 		errCh:     errCh,
-		mediator:  mediator,
+		executor:  executor,
 		host:      host,
 		namespace: namespace,
 		maxPeers:  maxPeers,
@@ -201,8 +201,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 	for {
 		message, err := subscription.Next(p2p.ctx)
 		if err != nil {
-			// TODO: log error properly with logger
-			fmt.Fprintln(os.Stderr, err)
+            log.Error("(Network) Error handling P2P message", "error", err)
 			continue
 		}
 
@@ -211,7 +210,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 			continue
 		}
 
-		p2p.mediator.MessageHandler(string(message.Message.Data), SourceP2P)
+		p2p.executor.Execute(string(message.Message.Data))
 	}
 }
 
@@ -225,7 +224,7 @@ func (p2p *P2P) Shutdown() error {
 		if p2p.streams[i].topic != nil {
 			if err := p2p.streams[i].topic.Close(); err != nil {
 				// just log the error here, since we need to try to close other topics
-				fmt.Fprintln(os.Stderr, err)
+                log.Error("(Network) Error closing topic", "error", err)
 			}
 		}
 	}
@@ -234,6 +233,10 @@ func (p2p *P2P) Shutdown() error {
 		return err
 	}
 
-	fmt.Println("P2P host successfully shutted down")
+    log.Info("(Network) P2P host successfully shutted down")
 	return nil
+}
+
+func (p2p *P2P) HostId() string {
+	return p2p.host.ID().String()
 }
