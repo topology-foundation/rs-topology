@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/log"
 	helloPb "github.com/topology-gg/gram/proto/gen/gram/base"
 	"google.golang.org/grpc"
 )
@@ -38,7 +39,7 @@ func (g *GRPC) Start() {
 	g.server = grpc.NewServer()
 
 	helloPb.RegisterServiceServer(g.server, &helloServer{})
-	fmt.Printf("GRPC Server is listening on port: %v\n", listener.Addr())
+	log.Info("(GRPC Server)", "address", listener.Addr())
 
 	if err := g.server.Serve(listener); err != nil {
 		g.errCh <- err
@@ -49,6 +50,6 @@ func (g *GRPC) Start() {
 func (g *GRPC) Shutdown() error {
 	g.server.GracefulStop()
 
-	fmt.Println("GRPC server successfully shutted down")
+	log.Info("(GRPC Server) successfully shutted down")
 	return nil
 }

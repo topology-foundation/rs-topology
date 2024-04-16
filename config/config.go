@@ -38,10 +38,15 @@ type RpcConfig struct {
 	Port int `json:"port"`
 }
 
+type LogConfig struct {
+	LogLevel string `json:"logLevel"`
+}
+
 type AppConfig struct {
 	Execution ExecutionConfig `json:"executionConfig"`
 	Network   NetworkConfig   `json:"networkConfig"`
 	Storage   StorageConfig   `json:"storageConfig"`
+	Log       LogConfig       `json:"logConfig"`
 }
 
 func LoadConfig[T any]() (*T, error) {

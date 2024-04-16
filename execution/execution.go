@@ -2,10 +2,10 @@ package execution
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/log"
 	"github.com/topology-gg/gram/storage"
 )
 
@@ -26,7 +26,7 @@ func NewExecution(ctx context.Context, storage storage.Storage, config *config.E
 func (execution *ExecutionModule) Execute(message string) {
 	// TODO: Proper message handling comes here.
 
-	fmt.Printf("(Execution) %s", message)
+	log.Info("(Execution)", "message", message)
 	kv := strings.Split(message, ": ")
 	_ = execution.storage.Set([]byte(kv[0]), []byte(kv[1]))
 }

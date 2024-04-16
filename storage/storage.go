@@ -2,10 +2,10 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"slices"
 
 	"github.com/topology-gg/gram/config"
+	"github.com/topology-gg/gram/log"
 
 	"github.com/cockroachdb/pebble"
 )
@@ -51,7 +51,7 @@ func (storage *StorageModule) Get(key []byte) ([]byte, error) {
 }
 
 func (storage *StorageModule) Set(key, value []byte) error {
-	fmt.Printf("(Storage) %s: %s", key, value)
+	log.Info("(Storage)", "key", key, "value", value)
 
 	return storage.db.Set(key, value, pebble.Sync)
 }
@@ -65,6 +65,6 @@ func (storage *StorageModule) Close() error {
 		return err
 	}
 
-	fmt.Println("DB connection successfully closed")
+	log.Info("DB connection successfully closed")
 	return nil
 }
