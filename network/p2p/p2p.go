@@ -201,7 +201,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 	for {
 		message, err := subscription.Next(p2p.ctx)
 		if err != nil {
-            log.Error("(Network) Error handling P2P message", "error", err)
+			log.Error("(Network) Error handling P2P message", "error", err)
 			continue
 		}
 
@@ -224,7 +224,7 @@ func (p2p *P2P) Shutdown() error {
 		if p2p.streams[i].topic != nil {
 			if err := p2p.streams[i].topic.Close(); err != nil {
 				// just log the error here, since we need to try to close other topics
-                log.Error("(Network) Error closing topic", "error", err)
+				log.Error("(Network) Error closing topic", "error", err)
 			}
 		}
 	}
@@ -233,7 +233,7 @@ func (p2p *P2P) Shutdown() error {
 		return err
 	}
 
-    log.Info("(Network) P2P host successfully shutted down")
+	log.Info("(Network) P2P host successfully shutted down")
 	return nil
 }
 
