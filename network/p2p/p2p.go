@@ -86,7 +86,7 @@ func (p2p *P2P) Start() {
 func (p2p *P2P) Publish(message string) {
 	msg, err := p2p.serializer.Marshal(&base.HelloRequest{Name: message})
 	if err != nil {
-		p2p.errCh <- err
+		fmt.Println("(Network) Failed to serialize message:", err)
 		return
 	}
 
@@ -225,7 +225,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 
 		var msg base.HelloRequest
 		if err := p2p.serializer.Unmarshal(message.Data, &msg); err != nil {
-			p2p.errCh <- err
+			fmt.Println("(Network) Failed to serialize message:", err)
 			continue
 		}
 
