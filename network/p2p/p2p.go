@@ -225,7 +225,7 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 
 		var msg base.HelloRequest
 		if err := p2p.serializer.Unmarshal(message.Data, &msg); err != nil {
-			fmt.Println("(Network) Failed to serialize message:", err)
+			fmt.Println("(Network) Failed to deserialize message:", err)
 			continue
 		}
 
