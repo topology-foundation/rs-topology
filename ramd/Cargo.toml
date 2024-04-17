@@ -1,10 +1,10 @@
 [package]
-name = "storage"
-authors.workspace = true
+name = "ramd"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = ""
 
-[dependencies]
-tokio = { workspace = true }
+[[bin]]
+path = "src/main.rs"
+name = "ramd"

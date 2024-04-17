@@ -45,6 +45,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "execution"
+version = "0.1.0"
+
+[[package]]
 name = "gimli"
 version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -93,6 +97,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bda66fc9667c18cb2758a2ac84d1167245054bcf85d5d1aaa6923f45801bdd02"
 
 [[package]]
+name = "ramd"
+version = "0.1.0"
+
+[[package]]
 name = "rpc"
 version = "0.1.0"
 dependencies = [
@@ -122,3 +130,11 @@ dependencies = [
  "backtrace",
  "pin-project-lite",
 ]
+
+[[package]]
+name = "vm"
+version = "0.1.0"
+
+[[package]]
+name = "vm-runtime"
+version = "0.1.0"

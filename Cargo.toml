@@ -1,15 +1,21 @@
 [workspace]
 members = [
+    "crates/execution/execution",
+    "crates/execution/vm",
+    "crates/execution/vm-runtime",
     "crates/rpc",
     "crates/storage",
+    "ramd",
 ]
 
 resolver = "2"
 
 [workspace.package]
+authors = ["Topology Foundation <contact@topology.gg>"]
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.77.2"
+license = "MIT"
 exclude = [".github/"]
 
 [workspace.dependencies]
