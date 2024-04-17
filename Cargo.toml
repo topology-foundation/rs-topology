@@ -1,5 +1,8 @@
 [workspace]
 members = [
+    "crates/execution/execution",
+    "crates/execution/vm",
+    "crates/execution/vm-runtime",
     "crates/rpc",
     "crates/storage",
     "ramd",
