@@ -1,0 +1,20 @@
+[workspace]
+members = [
+    "crates/rpc",
+    "crates/storage",
+]
+
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77.2"
+exclude = [".github/"]
+
+[workspace.dependencies]
+#rpc
+jsonrpsee = "0.22"
+
+#tokio
+tokio = { version = "1.21", default-features = false }

@@ -1,0 +1,9 @@
+[package]
+name = "rpc"
+version.workspace = true
+edition.workspace = true
+description = ""
+
+[dependencies]
+tokio = { workspace = true }
+jsonrpsee ={ workspace = true }
