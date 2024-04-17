@@ -1,0 +1,10 @@
+[package]
+name = "ramd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[[bin]]
+path = "src/main.rs"
+name = "ramd"

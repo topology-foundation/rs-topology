@@ -2,6 +2,7 @@
 members = [
     "crates/rpc",
     "crates/storage",
+    "ramd",
 ]
 
 resolver = "2"
