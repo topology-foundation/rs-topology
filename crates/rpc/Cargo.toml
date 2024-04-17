@@ -1,7 +1,9 @@
 [package]
 name = "rpc"
+authors.workspace = true
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 description = ""
 
 [dependencies]
