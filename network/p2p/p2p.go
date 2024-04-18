@@ -15,18 +15,21 @@ import (
 	"github.com/topology-gg/gram/config"
 	ex "github.com/topology-gg/gram/execution"
 	"github.com/topology-gg/gram/log"
+	pbcodec "github.com/topology-gg/gram/proto"
+	"github.com/topology-gg/gram/proto/gen/gram/base"
 )
 
 type P2P struct {
-	ctx       context.Context
-	errCh     chan error
-	executor  ex.Execution
-	host      host.Host
-	namespace string
-	maxPeers  int
-	port      int
-	pubsub    *pubsub.PubSub
-	streams   []Stream
+	ctx        context.Context
+	errCh      chan error
+	executor   ex.Execution
+	host       host.Host
+	namespace  string
+	maxPeers   int
+	port       int
+	pubsub     *pubsub.PubSub
+	streams    []Stream
+	serializer pbcodec.Serializer
 }
 
 type Stream struct {
@@ -59,16 +62,19 @@ func NewP2P(ctx context.Context, errCh chan error, executor ex.Execution, cfg *c
 		streams[i] = Stream{name: name}
 	}
 
+	serializer := &pbcodec.ProtoBufSerializer{}
+
 	return &P2P{
-		ctx:       ctx,
-		errCh:     errCh,
-		executor:  executor,
-		host:      host,
-		namespace: namespace,
-		maxPeers:  maxPeers,
-		port:      port,
-		pubsub:    gossipsub,
-		streams:   streams,
+		ctx:        ctx,
+		errCh:      errCh,
+		executor:   executor,
+		host:       host,
+		namespace:  namespace,
+		maxPeers:   maxPeers,
+		port:       port,
+		pubsub:     gossipsub,
+		streams:    streams,
+		serializer: serializer,
 	}, nil
 }
 
@@ -78,8 +84,14 @@ func (p2p *P2P) Start() {
 }
 
 func (p2p *P2P) Publish(message string) {
+	msg, err := p2p.serializer.Marshal(&base.HelloRequest{Name: message})
+	if err != nil {
+		log.Error("(Network) Failed to serialize message", "message", err)
+		return
+	}
+
 	for i := range p2p.streams {
-		if err := p2p.streams[i].topic.Publish(p2p.ctx, []byte(message)); err != nil {
+		if err := p2p.streams[i].topic.Publish(p2p.ctx, msg); err != nil {
 			log.Error("(Network) Failed to publish to topic", "topic", p2p.streams[i].name, "error", err)
 		}
 	}
@@ -207,6 +219,12 @@ func (p2p *P2P) p2pMessageHandler(subscription *pubsub.Subscription) {
 
 		sender := message.ReceivedFrom
 		if sender == p2p.host.ID() {
+			continue
+		}
+
+		var msg base.HelloRequest
+		if err := p2p.serializer.Unmarshal(message.Data, &msg); err != nil {
+			log.Error("(Network) Failed to deserialize message", "message", err)
 			continue
 		}
 
