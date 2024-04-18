@@ -1,4 +1,4 @@
-.PHONY: build-workspace clippy lint-check
+.PHONY: build-workspace clippy lint-check run-ramd
 
 build-workspace:
 	cargo build
@@ -8,3 +8,6 @@ clippy:
 
 lint-check:
 	cargo fmt --all -- --check
+
+run-ramd:
+	RUST_LOG=info cargo run --bin ramd

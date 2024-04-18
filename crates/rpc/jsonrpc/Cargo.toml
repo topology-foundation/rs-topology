@@ -1,0 +1,16 @@
+[package]
+name = "ramd-jsonrpc"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+ramd-jsonrpc-api.workspace = true
+ramd-jsonrpc-types.workspace = true
+
+async-trait.workspace = true
+tokio.workspace = true
+jsonrpsee.workspace = true
+tracing.workspace = true
