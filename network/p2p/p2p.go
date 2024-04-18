@@ -93,7 +93,6 @@ func (p2p *P2P) Publish(message string) {
 	for i := range p2p.streams {
 		if err := p2p.streams[i].topic.Publish(p2p.ctx, msg); err != nil {
 			log.Error("(Network) Failed to publish to topic", "topic", p2p.streams[i].name, "error", err)
-
 		}
 	}
 }
