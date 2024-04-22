@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use eyre::OptionExt;
 use ramd_db::rocks::RocksConfig;
 use ramd_jsonrpc_server::JsonRpcServerConfig;
 use ramd_tracing::TracingConfig;
@@ -11,6 +10,8 @@ const RAMD_DIR: &str = ".ramd";
 
 /// Directory path for storing ramd config information
 const CONFIG_DIR: &str = "config";
+
+const CONFIG_FIILE: &str = "ramd.toml";
 
 /// This struct gathers all config values used across ramd node
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -27,7 +28,7 @@ impl RamdConfig {
     /// Reads config from default path, returns error if config doesn't exists
     pub fn read() -> eyre::Result<Self> {
         let home_path = std::env::var("HOME")?;
-        let ramd_config_path: PathBuf = [home_path.as_str(), RAMD_DIR, CONFIG_DIR, "ramd.toml"]
+        let ramd_config_path: PathBuf = [home_path.as_str(), RAMD_DIR, CONFIG_DIR, CONFIG_FIILE]
             .iter()
             .collect();
 
@@ -47,26 +48,29 @@ impl RamdConfig {
 
         let home_path = std::env::var("HOME")?;
 
+        // create ramd root directory
         let root_dir: PathBuf = [home_path.as_str(), RAMD_DIR].iter().collect();
         std::fs::create_dir_all(&root_dir)?;
 
-        let config_dir = root_dir.join(CONFIG_DIR);
-        std::fs::create_dir(&config_dir)?;
-
-        let db_data_dir = root_dir.join(RocksConfig::db_name());
-        std::fs::create_dir(&db_data_dir)?;
-
+        // instantiate ramd config
         let config = RamdConfig {
-            rocks: RocksConfig {
-                path: db_data_dir
-                    .to_str()
-                    .ok_or_eyre("Failed to get rocksdb data directory")?
-                    .to_owned(),
-            },
+            tracing: TracingConfig::new(root_dir.clone()),
+            rocks: RocksConfig::new(root_dir.clone()),
             ..Default::default()
         };
 
-        let config_path = config_dir.join("ramd.toml");
+        // create directory to store ramd config
+        let config_dir = root_dir.join(CONFIG_DIR);
+        std::fs::create_dir(&config_dir)?;
+
+        // create directory for database
+        std::fs::create_dir(&config.rocks.path)?;
+
+        // create directory for logs
+        std::fs::create_dir(&config.tracing.path)?;
+
+        // store initial config values
+        let config_path = config_dir.join(CONFIG_FIILE);
 
         let toml_config = toml::to_string(&config)?;
         std::fs::write(config_path, toml_config)?;
