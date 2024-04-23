@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/config",
-    "crates/execution/execution",
+    "crates/execution/processor",
     "crates/execution/vm",
     "crates/execution/vm-runtime",
     "crates/rpc/jsonrpc",
@@ -28,6 +28,9 @@ exclude = [".github/"]
 [workspace.dependencies]
 # ramd
 ramd-config = { path = "crates/config" }
+ramd-processor = { path = "crates/execution/processor" }
+ramd-vm = { path = "crates/execution/vm" }
+ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
 ramd-jsonrpc = { path = "crates/rpc/jsonrpc" }
 ramd-jsonrpc-api = { path = "crates/rpc/jsonrpc-api" }
 ramd-jsonrpc-server = { path = "crates/rpc/jsonrpc-server" }

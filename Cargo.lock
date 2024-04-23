@@ -280,10 +280,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
-name = "execution"
-version = "0.1.0"
-
-[[package]]
 name = "eyre"
 version = "0.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1232,6 +1228,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ramd-processor"
+version = "0.1.0"
+
+[[package]]
 name = "ramd-tracing"
 version = "0.1.0"
 dependencies = [
@@ -1242,6 +1242,14 @@ dependencies = [
  "tracing-journald",
  "tracing-subscriber",
 ]
+
+[[package]]
+name = "ramd-vm"
+version = "0.1.0"
+
+[[package]]
+name = "ramd-vm-runtime"
+version = "0.1.0"
 
 [[package]]
 name = "rand"
@@ -2066,14 +2074,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "vm"
-version = "0.1.0"
-
-[[package]]
-name = "vm-runtime"
-version = "0.1.0"
 
 [[package]]
 name = "want"
