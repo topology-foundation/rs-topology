@@ -23,6 +23,10 @@ pub struct RocksStorage {
     db: rocksdb::DB,
 }
 
+// RocksDB implements Send + Sync.
+unsafe impl Send for RocksStorage {}
+unsafe impl Sync for RocksStorage {}
+
 impl RocksStorage {
     pub fn new(config: &RocksConfig) -> eyre::Result<Self> {
         let db = rocksdb::DB::open_default(&config.path)?;

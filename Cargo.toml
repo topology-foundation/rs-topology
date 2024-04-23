@@ -44,6 +44,9 @@ ramd-tracing = { path = "crates/tracing" }
 confy = "0.6"
 toml = "0.8"
 
+# execution
+base64 = "0.22.0"
+
 # db
 rocksdb = { version = "0.21.0", default-features = false, features = [
     "snappy",

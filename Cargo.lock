@@ -1193,9 +1193,11 @@ name = "ramd-jsonrpc"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base64 0.22.0",
  "jsonrpsee",
  "ramd-jsonrpc-api",
  "ramd-jsonrpc-types",
+ "ramd-node",
  "tokio",
  "tracing",
 ]
@@ -1217,6 +1219,7 @@ dependencies = [
  "jsonrpsee",
  "ramd-jsonrpc",
  "ramd-jsonrpc-api",
+ "ramd-node",
  "serde",
  "tokio",
  "tracing",

@@ -1,9 +1,11 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 pub use jsonrpsee::server::ServerBuilder;
 use jsonrpsee::{server::ServerHandle, RpcModule};
 use ramd_jsonrpc::live_object::LiveObjectApi;
 use ramd_jsonrpc_api::server::LiveObjectApiServer;
+use ramd_node::Node;
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
@@ -19,10 +21,10 @@ impl Default for JsonRpcServerConfig {
 }
 
 /// Launch configured jsonrpc server
-pub async fn launch(config: &JsonRpcServerConfig) -> eyre::Result<ServerHandle> {
+pub async fn launch(config: &JsonRpcServerConfig, node: Arc<Node>) -> eyre::Result<ServerHandle> {
     let mut module = RpcModule::new(());
 
-    let live_object_api = LiveObjectApi::new();
+    let live_object_api = LiveObjectApi::new(node.clone());
     module
         .merge(live_object_api.into_rpc())
         .map_err(|_| eyre::eyre!("Live object API has conflicting methods"))?;

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::config::NodeConfig;
+use crate::handlers::LiveObjectHandler;
 use ramd_db::rocks::RocksStorage;
 use ramd_db::storage::Storage;
 
@@ -16,4 +17,8 @@ impl Node {
             storage: storage.clone(),
         })
     }
+}
+
+impl LiveObjectHandler for Node {
+    fn create_live_object(&self, wasm_bytes: Vec<u8>) {}
 }
