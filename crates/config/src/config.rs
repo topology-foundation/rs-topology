@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use ramd_db::rocks::RocksConfig;
 use ramd_jsonrpc_server::JsonRpcServerConfig;
+use ramd_node::NodeConfig;
 use ramd_tracing::TracingConfig;
 use serde::{Deserialize, Serialize};
 
@@ -16,10 +17,10 @@ const CONFIG_FIILE: &str = "ramd.toml";
 /// This struct gathers all config values used across ramd node
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
 pub struct RamdConfig {
+    /// Configuration for RAM node
+    pub node: NodeConfig,
     /// Configuration for tracing/logging
     pub tracing: TracingConfig,
-    /// Configuration for rocksdb storage
-    pub rocks: RocksConfig,
     /// Configuration for jsonrpc server
     pub json_rpc: JsonRpcServerConfig,
 }
@@ -54,8 +55,10 @@ impl RamdConfig {
 
         // instantiate ramd config
         let config = RamdConfig {
+            node: NodeConfig {
+                rocks: RocksConfig::new(root_dir.clone()),
+            },
             tracing: TracingConfig::new(root_dir.clone()),
-            rocks: RocksConfig::new(root_dir.clone()),
             ..Default::default()
         };
 
@@ -64,7 +67,7 @@ impl RamdConfig {
         std::fs::create_dir(&config_dir)?;
 
         // create directory for database
-        std::fs::create_dir(&config.rocks.path)?;
+        std::fs::create_dir(&config.node.rocks.path)?;
 
         // create directory for logs
         std::fs::create_dir(&config.tracing.path)?;

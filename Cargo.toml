@@ -4,6 +4,7 @@ members = [
     "crates/execution/processor",
     "crates/execution/vm",
     "crates/execution/vm-runtime",
+    "crates/node",
     "crates/rpc/jsonrpc",
     "crates/rpc/jsonrpc-api",
     "crates/rpc/jsonrpc-server",
@@ -31,6 +32,7 @@ ramd-config = { path = "crates/config" }
 ramd-processor = { path = "crates/execution/processor" }
 ramd-vm = { path = "crates/execution/vm" }
 ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
+ramd-node = { path = "crates/node" }
 ramd-jsonrpc = { path = "crates/rpc/jsonrpc" }
 ramd-jsonrpc-api = { path = "crates/rpc/jsonrpc-api" }
 ramd-jsonrpc-server = { path = "crates/rpc/jsonrpc-server" }

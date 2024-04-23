@@ -1,7 +1,9 @@
+use std::thread::park;
+
 use ramd_config::config::RamdConfig;
 use ramd_jsonrpc_server::launch;
+use ramd_node::Node;
 use ramd_tracing::init as init_tracing;
-use std::thread::park;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -12,6 +14,8 @@ async fn main() -> eyre::Result<()> {
     init_tracing(&ramd_config.tracing);
 
     tracing::info!("Topology is a community-driven technology that brings random access memory to the world computer to power lock-free asynchronous decentralized applications.");
+    // Construct a RAM node
+    let node = Node::with_config(ramd_config.node)?;
 
     // Launch jsonrpc server
     let handle = launch(&ramd_config.json_rpc).await?;
