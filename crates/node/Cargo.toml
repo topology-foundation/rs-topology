@@ -12,3 +12,4 @@ ramd-db.workspace = true
 
 eyre.workspace = true
 serde.workspace = true
+tracing.workspace = true

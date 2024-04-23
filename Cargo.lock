@@ -1238,12 +1238,19 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "ramd-db",
+ "ramd-processor",
  "serde",
+ "tracing",
 ]
 
 [[package]]
 name = "ramd-processor"
 version = "0.1.0"
+dependencies = [
+ "eyre",
+ "ramd-db",
+ "tracing",
+]
 
 [[package]]
 name = "ramd-tracing"
