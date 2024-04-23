@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 
@@ -11,12 +12,13 @@ import (
 func main() {
 	ctx := context.Background()
 
-	defaultPort := "4001"
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%s", port)
+	port := flag.String("p", "4001", "Port number")
+
+	flag.Parse()
+
+	fmt.Println(*port)
+
+	listenAddr := fmt.Sprintf("/ip4/0.0.0.0/tcp/%s", *port)
 	fmt.Printf("Configured to listen on %s\n", listenAddr)
 
 	bootstrapNode, err := bootstrap.New(ctx, listenAddr)
