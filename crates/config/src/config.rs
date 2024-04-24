@@ -19,10 +19,12 @@ const CONFIG_FIILE: &str = "ramd.toml";
 pub struct RamdConfig {
     /// Configuration for RAM node
     pub node: NodeConfig,
-    /// Configuration for tracing/logging
-    pub tracing: TracingConfig,
+    /// Configuration for rocksdb storage
+    pub rocks: RocksConfig,
     /// Configuration for jsonrpc server
     pub json_rpc: JsonRpcServerConfig,
+    /// Configuration for tracing/logging
+    pub tracing: TracingConfig,
 }
 
 impl RamdConfig {
@@ -55,9 +57,7 @@ impl RamdConfig {
 
         // instantiate ramd config
         let config = RamdConfig {
-            node: NodeConfig {
-                rocks: RocksConfig::new(root_dir.clone()),
-            },
+            rocks: RocksConfig::new(root_dir.clone()),
             tracing: TracingConfig::new(root_dir.clone()),
             ..Default::default()
         };
@@ -67,7 +67,7 @@ impl RamdConfig {
         std::fs::create_dir(&config_dir)?;
 
         // create directory for database
-        std::fs::create_dir(&config.node.rocks.path)?;
+        std::fs::create_dir(&config.rocks.path)?;
 
         // create directory for logs
         std::fs::create_dir(&config.tracing.path)?;

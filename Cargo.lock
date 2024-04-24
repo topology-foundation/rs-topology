@@ -1157,6 +1157,7 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "ramd-config",
+ "ramd-db",
  "ramd-jsonrpc-server",
  "ramd-node",
  "ramd-tracing",
@@ -1217,6 +1218,7 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "jsonrpsee",
+ "ramd-db",
  "ramd-jsonrpc",
  "ramd-jsonrpc-api",
  "ramd-node",

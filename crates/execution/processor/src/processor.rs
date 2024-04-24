@@ -2,15 +2,21 @@ use std::sync::Arc;
 
 use crate::message::Message;
 use ramd_db::storage::Storage;
-use tracing::info;
+use tracing::error;
 
-pub struct Processor {
-    storage: Arc<dyn Storage<Vec<u8>, Vec<u8>>>,
+pub struct Processor<S>
+where
+    S: Storage<Vec<u8>, Vec<u8>>,
+{
+    storage: Arc<S>,
 }
 
-impl Processor {
-    pub fn new(storage: Arc<dyn Storage<Vec<u8>, Vec<u8>>>) -> Self {
-        Processor { storage }
+impl<S> Processor<S>
+where
+    S: Storage<Vec<u8>, Vec<u8>>,
+{
+    pub fn new(storage: Arc<S>) -> Self {
+        Self { storage }
     }
 
     pub fn process_messages(&self, messages: &[Message]) {
@@ -22,7 +28,7 @@ impl Processor {
         for message in messages {
             if let Err(_) = message.process(cache.clone()) {
                 // TODO: log message ID.
-                info!(target: "ramd::processor", "Failed to process a message");
+                error!(target: "ramd::processor", "Failed to process a message");
                 return;
             }
         }

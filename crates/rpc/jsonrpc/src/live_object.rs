@@ -9,18 +9,27 @@ use ramd_jsonrpc_types::live_object::CreateLiveObject;
 use ramd_node::LiveObjectHandler;
 use tracing::info;
 
-pub struct LiveObjectApi {
-    node: Arc<dyn LiveObjectHandler>,
+pub struct LiveObjectApi<H>
+where
+    H: LiveObjectHandler,
+{
+    node: Arc<H>,
 }
 
-impl LiveObjectApi {
-    pub fn new(node: Arc<dyn LiveObjectHandler>) -> Self {
-        Self { node }
+impl<H> LiveObjectApi<H>
+where
+    H: LiveObjectHandler,
+{
+    pub fn new(node: Arc<H>) -> Self {
+        Self { node: node.clone() }
     }
 }
 
 #[async_trait]
-impl LiveObjectApiServer for LiveObjectApi {
+impl<H> LiveObjectApiServer for LiveObjectApi<H>
+where
+    H: LiveObjectHandler + 'static,
+{
     async fn create_live_object(&self, request: CreateLiveObject) -> RpcResult<()> {
         info!(target: "ramd::jsonrpc", "Request to create a live object with wasm bytes {}", request.wasm_bytes);
 

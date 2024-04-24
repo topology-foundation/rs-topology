@@ -6,13 +6,20 @@ use std::sync::Arc;
 use config::JsonRpcServerConfig;
 pub use jsonrpsee::server::ServerBuilder;
 use jsonrpsee::{server::ServerHandle, RpcModule};
+use ramd_db::storage::Storage;
 use ramd_jsonrpc::live_object::LiveObjectApi;
 use ramd_jsonrpc_api::server::LiveObjectApiServer;
 use ramd_node::Node;
 use tracing::info;
 
 /// Launch configured jsonrpc server
-pub async fn launch(config: &JsonRpcServerConfig, node: Arc<Node>) -> eyre::Result<ServerHandle> {
+pub async fn launch<S>(
+    config: &JsonRpcServerConfig,
+    node: Arc<Node<S>>,
+) -> eyre::Result<ServerHandle>
+where
+    S: Storage<Vec<u8>, Vec<u8>> + 'static,
+{
     let mut module = RpcModule::new(());
 
     let live_object_api = LiveObjectApi::new(node.clone());

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::action::Action;
+use crate::Action;
 use ramd_db::storage::Storage;
 
 pub struct Message {
@@ -11,12 +11,10 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn from_action(action: Action) -> Self {
-        Message { action }
-    }
-
-    pub(crate) fn process(&self, cache: Arc<dyn Storage<Vec<u8>, Vec<u8>>>) -> eyre::Result<()> {
-        self.action.perform(cache)?;
-        Ok(())
+    pub(crate) fn process<S>(&self, cache: Arc<S>) -> eyre::Result<()>
+    where
+        S: Storage<Vec<u8>, Vec<u8>>,
+    {
+        self.action.perform(cache)
     }
 }
