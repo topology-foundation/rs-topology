@@ -7,6 +7,6 @@ pub struct JsonRpcServerConfig {
 
 impl Default for JsonRpcServerConfig {
     fn default() -> Self {
-        Self { port: 1111 }
+        Self { port: 1319 }
     }
 }
