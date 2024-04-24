@@ -44,9 +44,6 @@ ramd-tracing = { path = "crates/tracing" }
 confy = "0.6"
 toml = "0.8"
 
-# execution
-base64 = "0.22.0"
-
 # db
 rocksdb = { version = "0.21.0", default-features = false, features = [
     "snappy",
@@ -56,10 +53,7 @@ rocksdb = { version = "0.21.0", default-features = false, features = [
     "jemalloc",
 ] }
 
-# misc
-eyre = "0.6"
-serde_json = "1.0.94"
-serde = { version = "1.0", features = ["derive"] }
+# logs
 tracing = "0.1.0"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
@@ -84,3 +78,9 @@ tokio = { version = "1.28", features = [
     "sync",
     "time",
 ] }
+
+# misc
+base64 = "0.22.0"
+eyre = "0.6"
+serde_json = "1.0.94"
+serde = { version = "1.0", features = ["derive"] }
