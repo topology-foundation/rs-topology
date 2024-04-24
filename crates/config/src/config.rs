@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use ramd_db::rocks::RocksConfig;
-use ramd_jsonrpc_server::JsonRpcServerConfig;
+use ramd_db::config::RocksConfig;
+use ramd_jsonrpc_server::config::JsonRpcServerConfig;
 use ramd_node::NodeConfig;
-use ramd_tracing::TracingConfig;
+use ramd_tracing::config::TracingConfig;
 use serde::{Deserialize, Serialize};
 
 /// Directory path for storing all ramd related data

@@ -1,4 +1,4 @@
-use ramd_db::rocks::RocksConfig;
+use ramd_db::config::RocksConfig;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]

@@ -1,24 +1,15 @@
+pub mod config;
+
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use config::JsonRpcServerConfig;
 pub use jsonrpsee::server::ServerBuilder;
 use jsonrpsee::{server::ServerHandle, RpcModule};
 use ramd_jsonrpc::live_object::LiveObjectApi;
 use ramd_jsonrpc_api::server::LiveObjectApiServer;
 use ramd_node::Node;
-use serde::{Deserialize, Serialize};
 use tracing::info;
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
-pub struct JsonRpcServerConfig {
-    pub port: u16,
-}
-
-impl Default for JsonRpcServerConfig {
-    fn default() -> Self {
-        Self { port: 1111 }
-    }
-}
 
 /// Launch configured jsonrpc server
 pub async fn launch(config: &JsonRpcServerConfig, node: Arc<Node>) -> eyre::Result<ServerHandle> {
