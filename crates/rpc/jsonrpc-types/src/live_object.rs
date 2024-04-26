@@ -16,7 +16,7 @@ impl CreateLiveObject {
             Err(e) => {
                 error!(target: "ramd::jsonrpc-types", "Failed to decode wasm bytes with error `{}`", e.to_string());
 
-                return Err(ErrorObject::from(ErrorCode::InvalidParams));
+                Err(ErrorObject::from(ErrorCode::InvalidParams))
             }
         }
     }

@@ -26,7 +26,7 @@ where
         // TODO: add to messsage pool and then process messages.
 
         for message in messages {
-            if let Err(_) = message.process(cache.clone()) {
+            if message.process(cache.clone()).is_err() {
                 // TODO: log message ID.
                 error!(target: "ramd::processor", "Failed to process a message");
                 return;
