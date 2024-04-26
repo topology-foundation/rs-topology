@@ -1,5 +1,5 @@
 [package]
-name = "ramd-config"
+name = "ramd-node"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true
@@ -7,11 +7,9 @@ license.workspace = true
 description = ""
 
 [dependencies]
-ramd-node.workspace = true
+ramd-processor.workspace = true
 ramd-db.workspace = true
-ramd-jsonrpc-server.workspace = true
-ramd-tracing.workspace = true
 
 eyre.workspace = true
 serde.workspace = true
-toml.workspace = true
+tracing.workspace = true

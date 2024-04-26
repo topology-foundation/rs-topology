@@ -1,4 +1,4 @@
-pub trait Storage<K, V>
+pub trait Storage<K, V>: Send + Sync
 where
     K: AsRef<[u8]>,
     V: AsRef<[u8]>,

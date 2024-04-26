@@ -1,5 +1,5 @@
 [package]
-name = "execution"
+name = "ramd-processor"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true
@@ -7,3 +7,7 @@ license.workspace = true
 description = ""
 
 [dependencies]
+ramd-db.workspace = true
+
+eyre.workspace = true
+tracing.workspace = true

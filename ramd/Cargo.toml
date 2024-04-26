@@ -7,7 +7,9 @@ description = ""
 
 [dependencies]
 ramd-config.workspace = true
+ramd-node.workspace = true
 ramd-jsonrpc-server.workspace = true
+ramd-db.workspace = true
 ramd-tracing.workspace = true
 
 eyre.workspace = true
