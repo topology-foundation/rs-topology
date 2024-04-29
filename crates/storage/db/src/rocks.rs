@@ -4,6 +4,7 @@ use crate::storage::Storage;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(default)]
 pub struct RocksConfig {
     pub path: PathBuf,
 }

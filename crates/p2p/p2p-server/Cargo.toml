@@ -1,0 +1,20 @@
+[package]
+name = "ramd-p2p-server"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+ramd-p2p-types.workspace = true
+ramd-db.workspace = true
+
+eyre.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-channel.workspace = true
+tokio.workspace = true
+futures.workspace = true
+libp2p = { workspace = true, features = ["tokio", "dns", "kad", "noise", "tcp", "yamux", "rsa", "macros", "gossipsub"] }

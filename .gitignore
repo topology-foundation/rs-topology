@@ -12,3 +12,5 @@ target/
 
 # Default database directory
 /gram-database
+
+.env

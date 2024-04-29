@@ -4,6 +4,8 @@ members = [
     "crates/execution/execution",
     "crates/execution/vm",
     "crates/execution/vm-runtime",
+    "crates/p2p/p2p-server",
+    "crates/p2p/p2p-types",
     "crates/rpc/jsonrpc",
     "crates/rpc/jsonrpc-api",
     "crates/rpc/jsonrpc-server",
@@ -28,6 +30,8 @@ exclude = [".github/"]
 [workspace.dependencies]
 # ramd
 ramd-config = { path = "crates/config" }
+ramd-p2p-server ={ path = "crates/p2p/p2p-server"}
+ramd-p2p-types ={ path = "crates/p2p/p2p-types"}
 ramd-jsonrpc = { path = "crates/rpc/jsonrpc" }
 ramd-jsonrpc-api = { path = "crates/rpc/jsonrpc-api" }
 ramd-jsonrpc-server = { path = "crates/rpc/jsonrpc-server" }
@@ -49,6 +53,7 @@ rocksdb = { version = "0.21.0", default-features = false, features = [
 ] }
 
 # misc
+dotenv = "0.15.0"
 eyre = "0.6"
 serde_json = "1.0.94"
 serde = { version = "1.0", features = ["derive"] }
@@ -67,6 +72,7 @@ jsonrpsee-types = "0.22"
 
 # async
 async-trait = "0.1.68"
+async-channel = "2.2.1"
 futures = "0.3.5"
 tokio = { version = "1.28", features = [
     "fs",
@@ -76,3 +82,6 @@ tokio = { version = "1.28", features = [
     "sync",
     "time",
 ] }
+
+#p2p
+libp2p = "0.53.2"

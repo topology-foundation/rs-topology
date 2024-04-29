@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(default)]
 pub struct TracingConfig {
     pub path: PathBuf,
     pub max_size_bytes: u64,

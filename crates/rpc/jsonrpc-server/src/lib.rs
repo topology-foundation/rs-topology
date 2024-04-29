@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(default)]
 pub struct JsonRpcServerConfig {
     pub port: u16,
 }
