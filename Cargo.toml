@@ -1,11 +1,12 @@
 [workspace]
 members = [
     "crates/config",
-    "crates/execution/execution",
+    "crates/execution/processor",
     "crates/execution/vm",
     "crates/execution/vm-runtime",
     "crates/p2p/p2p-server",
     "crates/p2p/p2p-types",
+    "crates/node",
     "crates/rpc/jsonrpc",
     "crates/rpc/jsonrpc-api",
     "crates/rpc/jsonrpc-server",
@@ -32,6 +33,10 @@ exclude = [".github/"]
 ramd-config = { path = "crates/config" }
 ramd-p2p-server ={ path = "crates/p2p/p2p-server"}
 ramd-p2p-types ={ path = "crates/p2p/p2p-types"}
+ramd-processor = { path = "crates/execution/processor" }
+ramd-vm = { path = "crates/execution/vm" }
+ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
+ramd-node = { path = "crates/node" }
 ramd-jsonrpc = { path = "crates/rpc/jsonrpc" }
 ramd-jsonrpc-api = { path = "crates/rpc/jsonrpc-api" }
 ramd-jsonrpc-server = { path = "crates/rpc/jsonrpc-server" }
@@ -52,11 +57,7 @@ rocksdb = { version = "0.21.0", default-features = false, features = [
     "jemalloc",
 ] }
 
-# misc
-dotenv = "0.15.0"
-eyre = "0.6"
-serde_json = "1.0.94"
-serde = { version = "1.0", features = ["derive"] }
+# logs
 tracing = "0.1.0"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", default-features = false, features = [
@@ -85,3 +86,10 @@ tokio = { version = "1.28", features = [
 
 #p2p
 libp2p = "0.53.2"
+
+# misc
+dotenv = "0.15.0"
+base64 = "0.22.0"
+eyre = "0.6"
+serde_json = "1.0.94"
+serde = { version = "1.0", features = ["derive"] }

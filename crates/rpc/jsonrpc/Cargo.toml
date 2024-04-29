@@ -9,6 +9,7 @@ description = ""
 [dependencies]
 ramd-jsonrpc-api.workspace = true
 ramd-jsonrpc-types.workspace = true
+ramd-node.workspace = true
 
 async-trait.workspace = true
 tokio.workspace = true

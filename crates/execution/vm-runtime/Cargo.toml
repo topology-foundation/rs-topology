@@ -1,5 +1,5 @@
 [package]
-name = "vm-runtime"
+name = "ramd-vm-runtime"
 authors.workspace = true
 version.workspace = true
 edition.workspace = true

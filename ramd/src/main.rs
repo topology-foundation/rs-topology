@@ -2,6 +2,7 @@ use dotenv::dotenv;
 use ramd_config::RamdConfig;
 use ramd_db::rocks::RocksStorage;
 use ramd_jsonrpc_server::launch;
+use ramd_node::Node;
 use ramd_p2p_server::Server as P2pServer;
 use ramd_tracing::init as init_tracing;
 use std::{sync::Arc, thread::park};
@@ -36,6 +37,9 @@ async fn main() -> eyre::Result<()> {
     // Construct RocksDB
     let rocks = Arc::new(RocksStorage::new(&ramd_config.rocks)?);
 
+    // Construct a RAM node
+    let node = Arc::new(Node::new(&ramd_config.node, rocks.clone())?);
+
     // Launch p2p server
     let (mut p2p, _p2p_msg_sender) = P2pServer::new(&ramd_config.p2p, rocks.clone())?;
     tokio_runtime.spawn(async move { p2p.launch().await });
@@ -43,8 +47,11 @@ async fn main() -> eyre::Result<()> {
     // Launch jsonrpc server
     // TODO: for now we don't care about server, simply start it and forget
     // Revisit once proper server handle handling will be required
-    let handle = launch(&ramd_config.json_rpc).await?;
+    let handle = launch(&ramd_config.json_rpc, node.clone()).await?;
     tokio_runtime.spawn(handle.stopped());
+
+    // Launch P2P server
+    // TODO: create P2P server
 
     // TODO: implement proper process handler, for now simply park the main thread until ctrl+c
     park();

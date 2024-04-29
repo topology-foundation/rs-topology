@@ -7,8 +7,10 @@ license.workspace = true
 description = ""
 
 [dependencies]
+ramd-node.workspace = true
 ramd-jsonrpc.workspace = true
 ramd-jsonrpc-api.workspace = true
+ramd-db.workspace = true
 
 eyre.workspace = true
 tokio.workspace = true

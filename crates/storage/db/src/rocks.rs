@@ -1,28 +1,13 @@
-use std::path::PathBuf;
-
+use crate::config::RocksConfig;
 use crate::storage::Storage;
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
-#[serde(default)]
-pub struct RocksConfig {
-    pub path: PathBuf,
-}
-
-impl RocksConfig {
-    pub fn new(root_path: PathBuf) -> Self {
-        let db_path = root_path.join(Self::db_name());
-        Self { path: db_path }
-    }
-
-    fn db_name() -> PathBuf {
-        "ramd_db".into()
-    }
-}
 
 pub struct RocksStorage {
     db: rocksdb::DB,
 }
+
+// RocksDB implements Send + Sync.
+unsafe impl Send for RocksStorage {}
+unsafe impl Sync for RocksStorage {}
 
 impl RocksStorage {
     pub fn new(config: &RocksConfig) -> eyre::Result<Self> {
