@@ -16,18 +16,13 @@ use std::{sync::Arc, thread::park};
 ///     let ramd = RamdBuilder::new().with_a().with_b().build().await;
 ///     ramd.run().await;
 /// }
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() -> eyre::Result<()> {
-    // Configure tokio runtime for proper thread spawn
-    let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()?;
-
     // parse .env faile
     dotenv().ok();
 
-    if let Err(e) = start(&tokio_runtime).await {
-        eprintln!("Failed to start ramd node. Reason: {}", e);
+    if let Err(e) = start().await {
+        return Err(eyre::eyre!("Failed to start ramd node. Reason: {}", e));
     }
 
     // TODO: implement proper process handler, for now simply park the main thread until ctrl+c
@@ -37,7 +32,7 @@ async fn main() -> eyre::Result<()> {
 }
 
 /// This is a temp solution to properly log received error during start-up process
-async fn start(tokio_runtime: &tokio::runtime::Runtime) -> eyre::Result<()> {
+async fn start() -> eyre::Result<()> {
     // Init or read ramd config
     let ramd_config = RamdConfig::init_or_read()?;
 
@@ -54,13 +49,13 @@ async fn start(tokio_runtime: &tokio::runtime::Runtime) -> eyre::Result<()> {
 
     // Launch p2p server
     let (mut p2p, _p2p_msg_sender) = P2pServer::new(&ramd_config.p2p, rocks.clone())?;
-    tokio_runtime.spawn(async move { p2p.launch().await });
+    tokio::spawn(async move { p2p.launch().await });
 
     // Launch jsonrpc server
     // TODO: for now we don't care about server, simply start it and forget
     // Revisit once proper server handle handling will be required
     let handle = launch(&ramd_config.json_rpc, node.clone()).await?;
-    tokio_runtime.spawn(handle.stopped());
+    tokio::spawn(handle.stopped());
 
     Ok(())
 }
