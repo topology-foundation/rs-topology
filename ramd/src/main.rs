@@ -26,6 +26,18 @@ async fn main() -> eyre::Result<()> {
     // parse .env faile
     dotenv().ok();
 
+    if let Err(e) = start(&tokio_runtime).await {
+        eprintln!("Failed to start ramd node. Reason: {}", e);
+    }
+
+    // TODO: implement proper process handler, for now simply park the main thread until ctrl+c
+    park();
+
+    Ok(())
+}
+
+/// This is a temp solution to properly log received error during start-up process
+async fn start(tokio_runtime: &tokio::runtime::Runtime) -> eyre::Result<()> {
     // Init or read ramd config
     let ramd_config = RamdConfig::init_or_read()?;
 
@@ -49,12 +61,6 @@ async fn main() -> eyre::Result<()> {
     // Revisit once proper server handle handling will be required
     let handle = launch(&ramd_config.json_rpc, node.clone()).await?;
     tokio_runtime.spawn(handle.stopped());
-
-    // Launch P2P server
-    // TODO: create P2P server
-
-    // TODO: implement proper process handler, for now simply park the main thread until ctrl+c
-    park();
 
     Ok(())
 }

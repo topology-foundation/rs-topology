@@ -1,6 +1,7 @@
 use libp2p::{multiaddr::Protocol, Multiaddr};
 use serde::{Deserialize, Serialize};
 use std::{str::FromStr, time::Duration};
+use tracing::error;
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(default)]
@@ -17,23 +18,39 @@ impl P2pConfig {
         Duration::from_secs(self.idle_connection_timeout_secs)
     }
 
+    /// Converts string address into proper [`Multiaddr`] struct.
+    /// Expected peer address format is - /ip4/{ip}/tcp/{port}
     pub fn peer_addresses(&self) -> eyre::Result<Option<Vec<Multiaddr>>> {
         if let Some(peers) = self.peers.clone() {
             let mut multi_addrs = vec![];
 
             for peer in peers.iter() {
-                let mut addr = Multiaddr::from_str(peer)?;
+                let addr = Multiaddr::from_str(peer)?;
 
-                let last = addr.pop();
-                match last {
-                    // for a multiaddr that ends with a peer id, this strips this suffix. Rust-libp2p
-                    // only supports dialing to an address without providing the peer id.
-                    Some(Protocol::P2p(_peer_id)) => {}
-                    // if its another protocol appened suffix back
-                    Some(other) => addr.push(other),
-                    _ => {}
+                // validate peer address, expected format is /ip4/{ip}/tcp/{port}
+                let components = addr.iter().collect::<Vec<_>>();
+                if components.len() != 2 {
+                    error!(target: "p2p", "Invalid peer address format. Expected - /ip4/(ip)/tcp/(port)");
+                    continue;
                 }
 
+                match components[0] {
+                    Protocol::Ip4(_) => (),
+                    _ => {
+                        error!(target: "p2p", "Invalid first multiaddr part. Expected to be ip4");
+                        continue;
+                    }
+                };
+
+                match components[1] {
+                    Protocol::Tcp(_) => (),
+                    _ => {
+                        error!(target: "p2p", "Invalid second multiaddr part. Expected to be tcp");
+                        continue;
+                    }
+                };
+
+                // address is in a valid format, store it for future connection attempt
                 multi_addrs.push(addr);
             }
 
