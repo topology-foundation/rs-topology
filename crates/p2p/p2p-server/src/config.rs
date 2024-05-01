@@ -11,6 +11,7 @@ pub struct P2pConfig {
     pub boot_nodes: Vec<String>,
     pub peers: Option<Vec<String>>,
     pub topic: String,
+    pub max_peers_limit: usize,
 }
 
 impl P2pConfig {
@@ -74,6 +75,7 @@ impl Default for P2pConfig {
             ],
             peers: None,
             topic: "ramd-topic".to_owned(),
+            max_peers_limit: 10,
         }
     }
 }
