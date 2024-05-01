@@ -7,11 +7,13 @@ description = ""
 
 [dependencies]
 ramd-config.workspace = true
+ramd-p2p-server.workspace = true
 ramd-node.workspace = true
 ramd-jsonrpc-server.workspace = true
 ramd-db.workspace = true
 ramd-tracing.workspace = true
 
+dotenv.workspace = true
 eyre.workspace = true
 tokio.workspace = true
 tracing.workspace = true

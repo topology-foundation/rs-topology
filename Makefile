@@ -1,4 +1,4 @@
-.PHONY: build-workspace clippy lint-check run-ramd
+.PHONY: build-workspace clippy lint-check run-ramd clean-ramd-dir
 
 build-workspace:
 	cargo build
@@ -11,3 +11,6 @@ lint-check:
 
 run-ramd:
 	RUST_LOG=info cargo run --bin ramd
+
+clean-ramd-dir:
+	rm -r ${HOME}/.ramd

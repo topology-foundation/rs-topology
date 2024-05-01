@@ -4,6 +4,8 @@ members = [
     "crates/execution/processor",
     "crates/execution/vm",
     "crates/execution/vm-runtime",
+    "crates/p2p/p2p-server",
+    "crates/p2p/p2p-types",
     "crates/node",
     "crates/rpc/jsonrpc",
     "crates/rpc/jsonrpc-api",
@@ -29,6 +31,8 @@ exclude = [".github/"]
 [workspace.dependencies]
 # ramd
 ramd-config = { path = "crates/config" }
+ramd-p2p-server ={ path = "crates/p2p/p2p-server"}
+ramd-p2p-types ={ path = "crates/p2p/p2p-types"}
 ramd-processor = { path = "crates/execution/processor" }
 ramd-vm = { path = "crates/execution/vm" }
 ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
@@ -69,6 +73,7 @@ jsonrpsee-types = "0.22"
 
 # async
 async-trait = "0.1.68"
+async-channel = "2.2.1"
 futures = "0.3.5"
 tokio = { version = "1.28", features = [
     "fs",
@@ -79,7 +84,11 @@ tokio = { version = "1.28", features = [
     "time",
 ] }
 
+#p2p
+libp2p = "0.53.2"
+
 # misc
+dotenv = "0.15.0"
 base64 = "0.22.0"
 eyre = "0.6"
 serde_json = "1.0.94"

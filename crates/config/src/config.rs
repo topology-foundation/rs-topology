@@ -1,10 +1,10 @@
-use std::path::PathBuf;
-
 use ramd_db::config::RocksConfig;
 use ramd_jsonrpc_server::config::JsonRpcServerConfig;
 use ramd_node::NodeConfig;
+use ramd_p2p_server::config::P2pConfig;
 use ramd_tracing::config::TracingConfig;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 /// Directory path for storing all ramd related data
 const RAMD_DIR: &str = ".ramd";
@@ -16,6 +16,7 @@ const CONFIG_FIILE: &str = "ramd.toml";
 
 /// This struct gathers all config values used across ramd node
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(default)]
 pub struct RamdConfig {
     /// Configuration for RAM node
     pub node: NodeConfig,
@@ -23,6 +24,8 @@ pub struct RamdConfig {
     pub rocks: RocksConfig,
     /// Configuration for jsonrpc server
     pub json_rpc: JsonRpcServerConfig,
+    /// Configuration for p2p server
+    pub p2p: P2pConfig,
     /// Configuration for tracing/logging
     pub tracing: TracingConfig,
 }
@@ -31,9 +34,16 @@ impl RamdConfig {
     /// Reads config from default path, returns error if config doesn't exists
     pub fn read() -> eyre::Result<Self> {
         let home_path = std::env::var("HOME")?;
-        let ramd_config_path: PathBuf = [home_path.as_str(), RAMD_DIR, CONFIG_DIR, CONFIG_FIILE]
-            .iter()
-            .collect();
+        let ramd_dir = Self::get_ramd_dir();
+
+        let ramd_config_path: PathBuf = [
+            home_path.as_str(),
+            ramd_dir.as_str(),
+            CONFIG_DIR,
+            CONFIG_FIILE,
+        ]
+        .iter()
+        .collect();
 
         let config = std::fs::read_to_string(ramd_config_path)
             .map_err(|_| eyre::eyre!("Path doesn't exist"))?;
@@ -50,9 +60,10 @@ impl RamdConfig {
         };
 
         let home_path = std::env::var("HOME")?;
+        let ramd_dir = Self::get_ramd_dir();
 
         // create ramd root directory
-        let root_dir: PathBuf = [home_path.as_str(), RAMD_DIR].iter().collect();
+        let root_dir: PathBuf = [home_path.as_str(), ramd_dir.as_str()].iter().collect();
         std::fs::create_dir_all(&root_dir)?;
 
         // instantiate ramd config
@@ -79,5 +90,14 @@ impl RamdConfig {
         std::fs::write(config_path, toml_config)?;
 
         Ok(config)
+    }
+
+    fn get_ramd_dir() -> String {
+        // check if custom dir name is set
+        if let Ok(custom_dir) = std::env::var("RAMD_DIR_NAME") {
+            custom_dir
+        } else {
+            RAMD_DIR.to_owned()
+        }
     }
 }
