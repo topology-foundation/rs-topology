@@ -1,0 +1,10 @@
+[package]
+name = "ramd-p2p-types"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+serde.workspace = true

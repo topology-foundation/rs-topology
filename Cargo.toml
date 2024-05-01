@@ -1,0 +1,95 @@
+[workspace]
+members = [
+    "crates/config",
+    "crates/execution/processor",
+    "crates/execution/vm",
+    "crates/execution/vm-runtime",
+    "crates/p2p/p2p-server",
+    "crates/p2p/p2p-types",
+    "crates/node",
+    "crates/rpc/jsonrpc",
+    "crates/rpc/jsonrpc-api",
+    "crates/rpc/jsonrpc-server",
+    "crates/rpc/jsonrpc-types",
+    "crates/storage/db",
+    "crates/tracing",
+    "ramd",
+]
+
+resolver = "2"
+
+default-members = ["ramd"]
+
+[workspace.package]
+authors = ["Topology Foundation <contact@topology.gg>"]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77.2"
+license = "MIT"
+exclude = [".github/"]
+
+[workspace.dependencies]
+# ramd
+ramd-config = { path = "crates/config" }
+ramd-p2p-server ={ path = "crates/p2p/p2p-server"}
+ramd-p2p-types ={ path = "crates/p2p/p2p-types"}
+ramd-processor = { path = "crates/execution/processor" }
+ramd-vm = { path = "crates/execution/vm" }
+ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
+ramd-node = { path = "crates/node" }
+ramd-jsonrpc = { path = "crates/rpc/jsonrpc" }
+ramd-jsonrpc-api = { path = "crates/rpc/jsonrpc-api" }
+ramd-jsonrpc-server = { path = "crates/rpc/jsonrpc-server" }
+ramd-jsonrpc-types = { path = "crates/rpc/jsonrpc-types" }
+ramd-db = { path = "crates/storage/db" }
+ramd-tracing = { path = "crates/tracing" }
+
+# config
+confy = "0.6"
+toml = "0.8"
+
+# db
+rocksdb = { version = "0.21.0", default-features = false, features = [
+    "snappy",
+    "lz4",
+    "zstd",
+    "zlib",
+    "jemalloc",
+] }
+
+# logs
+tracing = "0.1.0"
+tracing-appender = "0.2"
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "env-filter",
+    "fmt",
+    "json",
+] }
+
+# rpc
+jsonrpsee = "0.22"
+jsonrpsee-core = "0.22"
+jsonrpsee-types = "0.22"
+
+# async
+async-trait = "0.1.68"
+async-channel = "2.2.1"
+futures = "0.3.5"
+tokio = { version = "1.28", features = [
+    "fs",
+    "macros",
+    "net",
+    "rt-multi-thread",
+    "sync",
+    "time",
+] }
+
+#p2p
+libp2p = "0.53.2"
+
+# misc
+dotenv = "0.15.0"
+base64 = "0.22.0"
+eyre = "0.6"
+serde_json = "1.0.94"
+serde = { version = "1.0", features = ["derive"] }

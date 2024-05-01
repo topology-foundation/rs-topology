@@ -1,0 +1,19 @@
+[package]
+name = "ramd-jsonrpc-server"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+ramd-node.workspace = true
+ramd-jsonrpc.workspace = true
+ramd-jsonrpc-api.workspace = true
+ramd-db.workspace = true
+
+eyre.workspace = true
+tokio.workspace = true
+jsonrpsee = { workspace = true, features = ["server"] }
+tracing.workspace = true
+serde.workspace = true

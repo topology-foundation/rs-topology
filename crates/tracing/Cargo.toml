@@ -1,0 +1,15 @@
+[package]
+name = "ramd-tracing"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+tracing.workspace = true
+tracing-appender.workspace = true
+tracing-subscriber.workspace = true
+tracing-journald = "0.3"
+rolling-file = "0.2.0"
+serde.workspace = true

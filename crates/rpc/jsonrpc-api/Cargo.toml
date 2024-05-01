@@ -1,0 +1,13 @@
+[package]
+name = "ramd-jsonrpc-api"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+ramd-jsonrpc-types.workspace = true
+
+tokio.workspace = true
+jsonrpsee = { workspace = true, features = ["server", "client", "macros"] }
