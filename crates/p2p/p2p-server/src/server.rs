@@ -11,7 +11,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::config::P2pConfig;
 
@@ -170,14 +170,14 @@ where
                         match result {
                             kad::QueryResult::GetProviders(Ok(kad::GetProvidersOk::FoundProviders { key, providers, .. })) => {
                                 for peer in providers {
-                                    println!(
+                                    debug!(
                                         "KAD: Peer {peer:?} provides key {:?}",
                                         std::str::from_utf8(key.as_ref()).unwrap()
                                     );
                                 }
                             }
                             kad::QueryResult::GetProviders(Err(err)) => {
-                                println!("KAD: Failed to get providers: {err:?}");
+                                debug!("KAD: Failed to get providers: {err:?}");
                             }
                             kad::QueryResult::GetRecord(Ok(
                                 kad::GetRecordOk::FoundRecord(kad::PeerRecord {
@@ -185,7 +185,7 @@ where
                                     ..
                                 })
                             )) => {
-                                println!(
+                                debug!(
                                     "KAD: Got record {:?} {:?}",
                                     std::str::from_utf8(key.as_ref()).unwrap(),
                                     std::str::from_utf8(&value).unwrap(),
@@ -193,25 +193,25 @@ where
                             }
                             kad::QueryResult::GetRecord(Ok(_)) => {}
                             kad::QueryResult::GetRecord(Err(err)) => {
-                                println!("KAD: Failed to get record: {err:?}");
+                                debug!("KAD: Failed to get record: {err:?}");
                             }
                             kad::QueryResult::PutRecord(Ok(kad::PutRecordOk { key })) => {
-                                println!(
+                                debug!(
                                     "KAD: Successfully put record {:?}",
                                     std::str::from_utf8(key.as_ref()).unwrap()
                                 );
                             }
                             kad::QueryResult::PutRecord(Err(err)) => {
-                                println!("KAD: Failed to put record: {err:?}");
+                                debug!("KAD: Failed to put record: {err:?}");
                             }
                             kad::QueryResult::StartProviding(Ok(kad::AddProviderOk { key })) => {
-                                println!(
+                                debug!(
                                     "KAD: Successfully put provider record {:?}",
                                     std::str::from_utf8(key.as_ref()).unwrap()
                                 );
                             }
                             kad::QueryResult::StartProviding(Err(err)) => {
-                                println!("KAD: Failed to put provider record: {err:?}");
+                                debug!("KAD: Failed to put provider record: {err:?}");
                             }
                             _ => {}
                         }
@@ -223,7 +223,7 @@ where
                         message,
                     })) => {
                         // TODO: when message is received - verify topic inside message.topic to be of a valid one
-                        println!("GOSSIP: Received gossipsub message. peer {}, id {}, data {}", peer_id, id, std::str::from_utf8(&message.data).unwrap());
+                        debug!("GOSSIP: Received gossipsub message. peer {}, id {}, data {}", peer_id, id, std::str::from_utf8(&message.data).unwrap());
 
                         // first validate that received message is received from the right topic
                         if message.topic != self.topic.hash() {
@@ -236,7 +236,7 @@ where
                         peer_id,
                         topic,
                     })) => {
-                        println!("GOSSIP: New peer subscribed to topic. peer {}, topic {}", peer_id, topic);
+                        debug!("GOSSIP: New peer subscribed to topic. peer {}, topic {}", peer_id, topic);
 
                         // if connected peer is not a boot node and the topic is wrong - disconnect from it
                         if !self.is_boot_node(&peer_id) && topic != self.topic.hash() {
