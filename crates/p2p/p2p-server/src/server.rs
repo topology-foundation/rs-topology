@@ -168,7 +168,7 @@ where
                         if self.is_peer_limit_reached() {
                             debug!("Peer limit is reached. Disconnecting from peer {peer_id}");
                             if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from peer due to peer limit was reached. Reason: {e:?}");
+                                error!("Failed to disconnect from a peer connected beyond the peer limit. Reason: {e:?}");
                             }
                         }
                     }

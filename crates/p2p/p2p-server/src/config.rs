@@ -75,7 +75,7 @@ impl Default for P2pConfig {
             ],
             peers: None,
             topic: "ramd-topic".to_owned(),
-            max_peers_limit: 10,
+            max_peers_limit: 1,
         }
     }
 }
