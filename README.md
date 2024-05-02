@@ -1,7 +1,41 @@
-# TBA
+# RAM Monorepo
+
+RAM monorepo implements components of Topology protocol stack.
+
+## Running `ramd`
+
+To build `ramd`, Rust (version 1.77.2 or later) is required. Please make sure Rust is installed and then run:
+
+```
+make run-ramd
+```
+
+It will run `ramd` and generate default config and necessary files. To view these files, use:
+
+```
+cd $HOME/.ramd
+ls
+```
+
+(Optional) If you wish to change the location of these files, you can set `RAMD_DIR_NAME` environment variable in .env file as demonstrated [here](./.env.example). After configuring .env and running `ramd`, you can access the files with:
+
+```
+cd $HOME/{RAMD_DIR_NAME}
+ls
+```
+
+If you encounter any issues, please feel free to [reach out](#contact) to us.
+
+## Contributing
+
+We are committed to community-driven development and welcome feedback and contributions from anyone on the internet!
+
+If you're interested in collaborating with us, please refer to [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
+
+## Contact
+
+You can join our [Discord](https://discord.gg/hMsQas3Vw9) to ask questions or engage in discussions.
 
 ## License
 
-Go RAM is licensed under the MIT License.
-
-All the code under the `log` folder is a modified version of the [`go-ethereum` log](https://github.com/ethereum/go-ethereum/tree/bd91810462187086b2715fd343aa427e181d89a2/log), and therefore licensed under the GNU Lesser General Public License v3.0.
+RAM monorepo is licensed under the MIT License.
