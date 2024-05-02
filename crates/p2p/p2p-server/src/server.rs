@@ -29,6 +29,7 @@ where
     swarm: libp2p::Swarm<RamdBehavior>,
     boot_nodes: Vec<PeerId>,
     topic: IdentTopic,
+    max_peers_limit: usize,
     rx: Receiver<P2pMessage>,
 }
 
@@ -125,6 +126,7 @@ where
                 swarm,
                 boot_nodes,
                 topic,
+                max_peers_limit: p2p_cfg.max_peers_limit,
                 rx,
             },
             tx,
@@ -161,6 +163,14 @@ where
                     }
                     SwarmEvent::ConnectionEstablished { peer_id, .. } => {
                         info!(target: "p2p", "Connection established with peer: {}", peer_id);
+
+                        // if peers limit reached on a new connection established event - disconnect from it
+                        if self.is_peer_limit_reached() {
+                            debug!("Peer limit is reached. Disconnecting from peer {peer_id}");
+                            if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
+                                error!("Failed to disconnect from a peer connected beyond the peer limit. Reason: {e:?}");
+                            }
+                        }
                     }
                     SwarmEvent::ConnectionClosed { peer_id, .. } => {
                         info!(target: "p2p", "Connection was closed with peer: {}", peer_id);
@@ -228,7 +238,7 @@ where
                         // first validate that received message is received from the right topic
                         if message.topic != self.topic.hash() {
                             if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from not supporting gossipsub peer. Reason: {e:?}");
+                                error!("Failed to disconnect from peer sending message to a wrong topic. Reason: {e:?}");
                             }
                         }
                     }
@@ -241,7 +251,7 @@ where
                         // if connected peer is not a boot node and the topic is wrong - disconnect from it
                         if !self.is_boot_node(&peer_id) && topic != self.topic.hash() {
                             if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from not supporting gossipsub peer. Reason: {e:?}");
+                                error!("Failed to disconnect from peer subscribed to a wrong topic. Reason: {e:?}");
                             }
                         }
                     }
@@ -269,8 +279,15 @@ where
         }
     }
 
+    /// Checks does peer id is one of the boot nodes from the config
     fn is_boot_node(&self, peer_id: &PeerId) -> bool {
         self.boot_nodes.iter().any(|peer| peer == peer_id)
+    }
+
+    /// Checks is the current amount of connected peers exceed configured limit or not
+    fn is_peer_limit_reached(&self) -> bool {
+        let network_info = self.swarm.network_info();
+        network_info.num_peers() >= self.max_peers_limit
     }
 
     /// If private key was already created then recover it from the storage,
