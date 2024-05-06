@@ -13,12 +13,16 @@ members = [
     "crates/rpc/jsonrpc-types",
     "crates/storage/db",
     "crates/tracing",
+    "bootnode",
     "ramd",
 ]
 
 resolver = "2"
 
 default-members = ["ramd"]
+
+[profile.release]
+lto = "thin"
 
 [workspace.package]
 authors = ["Topology Foundation <contact@topology.gg>"]

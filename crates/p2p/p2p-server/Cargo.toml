@@ -17,4 +17,4 @@ serde_json.workspace = true
 async-channel.workspace = true
 tokio.workspace = true
 futures.workspace = true
-libp2p = { workspace = true, features = ["tokio", "dns", "kad", "noise", "tcp", "yamux", "rsa", "macros", "gossipsub"] }
+libp2p = { workspace = true, features = ["tokio", "dns", "kad", "noise", "tcp", "yamux", "rsa", "macros", "gossipsub", "identify"] }

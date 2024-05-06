@@ -1,24 +1,26 @@
 use async_channel::{Receiver, Sender};
 use futures::prelude::*;
-use libp2p::gossipsub::IdentTopic;
-use libp2p::swarm::SwarmEvent;
-use libp2p::PeerId;
-use libp2p::{gossipsub, identity, kad, kad::Mode, noise, swarm::NetworkBehaviour, tcp, yamux};
-use ramd_db::keys::RAMD_P2P_KEYPAIR_KEY;
-use ramd_db::storage::Storage;
+use libp2p::{
+    gossipsub, gossipsub::IdentTopic, identify, identity, kad, kad::Mode, noise,
+    swarm::NetworkBehaviour, swarm::SwarmEvent, tcp, yamux, PeerId,
+};
+use ramd_db::{keys::RAMD_P2P_KEYPAIR_KEY, storage::Storage};
 use ramd_p2p_types::message::P2pMessage;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use std::sync::Arc;
-use std::time::Duration;
+use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+    sync::Arc,
+    time::Duration,
+};
 use tracing::{debug, error, info, warn};
 
-use crate::config::P2pConfig;
+use crate::config::{P2pConfig, RAM_PROTOCOL_VERSION};
 
 #[derive(NetworkBehaviour)]
 struct RamdBehavior {
     gossipsub: gossipsub::Behaviour,
     kademlia: kad::Behaviour<kad::store::MemoryStore>,
+    identify: identify::Behaviour,
 }
 
 pub struct Server<S>
@@ -30,7 +32,8 @@ where
     boot_nodes: Vec<PeerId>,
     topic: IdentTopic,
     max_peers_limit: usize,
-    rx: Receiver<P2pMessage>,
+    msg_receiver: Receiver<P2pMessage>,
+    bootstrap_interval: tokio::time::Interval,
 }
 
 impl<S> Server<S>
@@ -73,9 +76,16 @@ where
                 let peer_id = key.public().to_peer_id();
                 let kademlia = kad::Behaviour::new(peer_id, kad::store::MemoryStore::new(peer_id));
 
+                // Configure identify protocol so that this node cane be discovered
+                let identify = identify::Behaviour::new(identify::Config::new(
+                    RAM_PROTOCOL_VERSION.to_string(),
+                    key.public(),
+                ));
+
                 Ok(RamdBehavior {
                     gossipsub,
                     kademlia,
+                    identify,
                 })
             })?
             .with_swarm_config(|c| {
@@ -87,19 +97,22 @@ where
         let topic = IdentTopic::new(&p2p_cfg.topic);
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
 
-        // Adding default bootstrap nodes from IPFS
-        // TODO: should be changed to our nodes
-        let mut boot_nodes = vec![];
-        for boot in p2p_cfg.boot_nodes.iter() {
-            let peer_id = boot.parse()?;
+        // Adding boot node addresses for initial peer discovery
+        let boot_nodes = p2p_cfg
+            .boot_nodes
+            .iter()
+            .map(|boot| {
+                let peer_id = boot.peer_id.parse()?;
+                let address = boot.address.parse()?;
 
-            swarm
-                .behaviour_mut()
-                .kademlia
-                .add_address(&peer_id, "/dnsaddr/bootstrap.libp2p.io".parse()?);
+                swarm
+                    .behaviour_mut()
+                    .kademlia
+                    .add_address(&peer_id, address);
 
-            boot_nodes.push(peer_id);
-        }
+                Ok(peer_id)
+            })
+            .collect::<eyre::Result<Vec<_>>>()?;
 
         // Try to deal with peers from config
         if let Some(known_peers) = p2p_cfg.peer_addresses()? {
@@ -118,7 +131,12 @@ where
         swarm.listen_on(format!("/ip4/0.0.0.0/tcp/{}", p2p_cfg.port).parse()?)?;
 
         // Create channel for communicating with p2p module
-        let (tx, rx) = async_channel::unbounded();
+        let (msg_sender, msg_receiver) = async_channel::unbounded();
+
+        // Create bootstrap interval timer
+        let bootstrap_interval = tokio::time::interval(std::time::Duration::from_secs(
+            p2p_cfg.bootstrap_interval_secs,
+        ));
 
         Ok((
             Self {
@@ -127,21 +145,24 @@ where
                 boot_nodes,
                 topic,
                 max_peers_limit: p2p_cfg.max_peers_limit,
-                rx,
+                msg_receiver,
+                bootstrap_interval,
             },
-            tx,
+            msg_sender,
         ))
     }
 
     pub async fn launch(&mut self) {
-        if let Err(e) = self.swarm.behaviour_mut().kademlia.bootstrap() {
-            error!(target: "p2p", "Bootstrap step has failed due to: {}", e.to_string());
-        }
-
         loop {
             tokio::select! {
+                // periodically running bootstrap to refresh peers dht
+                _ = self.bootstrap_interval.tick() => {
+                    if let Err(e) = self.swarm.behaviour_mut().kademlia.bootstrap() {
+                        error!(target: "p2p", "Bootstrap step has failed, waiting for next iteration. Reason: {}", e.to_string());
+                    }
+                }
                 // ramd request for broadcasting a message
-                Ok(ramd_msg) = self.rx.recv() => {
+                Ok(ramd_msg) = self.msg_receiver.recv() => {
                     let Ok(msg) = serde_json::to_string(&ramd_msg) else {
                         error!(target: "p2p", "Failed to serialize P2pMessage struct. Received message: {:?}", ramd_msg);
                         continue;
@@ -167,9 +188,7 @@ where
                         // if peers limit reached on a new connection established event - disconnect from it
                         if self.is_peer_limit_reached() {
                             debug!("Peer limit is reached. Disconnecting from peer {peer_id}");
-                            if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from a peer connected beyond the peer limit. Reason: {e:?}");
-                            }
+                            self.disconnect_peer(&peer_id);
                         }
                     }
                     SwarmEvent::ConnectionClosed { peer_id, .. } => {
@@ -232,14 +251,11 @@ where
                         message_id: id,
                         message,
                     })) => {
-                        // TODO: when message is received - verify topic inside message.topic to be of a valid one
-                        debug!("GOSSIP: Received gossipsub message. peer {}, id {}, data {}", peer_id, id, std::str::from_utf8(&message.data).unwrap());
+                        info!("GOSSIP: Received gossipsub message. peer {}, id {}, data {}", peer_id, id, std::str::from_utf8(&message.data).unwrap());
 
                         // first validate that received message is received from the right topic
                         if message.topic != self.topic.hash() {
-                            if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from peer sending message to a wrong topic. Reason: {e:?}");
-                            }
+                            self.disconnect_peer(&peer_id);
                         }
                     }
                     SwarmEvent::Behaviour(RamdBehaviorEvent::Gossipsub(gossipsub::Event::Subscribed {
@@ -250,9 +266,7 @@ where
 
                         // if connected peer is not a boot node and the topic is wrong - disconnect from it
                         if !self.is_boot_node(&peer_id) && topic != self.topic.hash() {
-                            if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from peer subscribed to a wrong topic. Reason: {e:?}");
-                            }
+                            self.disconnect_peer(&peer_id);
                         }
                     }
                     SwarmEvent::Behaviour(RamdBehaviorEvent::Gossipsub(gossipsub::Event::Unsubscribed {
@@ -268,9 +282,7 @@ where
 
                         if !self.is_boot_node(&peer_id) {
                             warn!("Disconnecting from not supporting gossipsub peer {}.", peer_id);
-                            if let Err(e) = self.swarm.disconnect_peer_id(peer_id) {
-                                error!("Failed to disconnect from not supporting gossipsub peer. Reason: {e:?}");
-                            }
+                            self.disconnect_peer(&peer_id);
                         }
                     }
                     _ => {}
@@ -288,6 +300,17 @@ where
     fn is_peer_limit_reached(&self) -> bool {
         let network_info = self.swarm.network_info();
         network_info.num_peers() >= self.max_peers_limit
+    }
+
+    /// Fully disconnect from peer and remove it from the routing table
+    fn disconnect_peer(&mut self, peer_id: &PeerId) {
+        // disconnect from peer
+        if let Err(e) = self.swarm.disconnect_peer_id(*peer_id) {
+            error!("Failed to disconnect from peer. Reason: {e:?}");
+        }
+
+        // remove it from kademlia table
+        let _ = self.swarm.behaviour_mut().kademlia.remove_peer(peer_id);
     }
 
     /// If private key was already created then recover it from the storage,
