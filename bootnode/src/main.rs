@@ -131,8 +131,7 @@ async fn setup_swarm(boot_config: &Config) -> eyre::Result<libp2p::Swarm<BootNod
         .with_behaviour(|key| {
             // Configure kademlia behavior
             let peer_id = key.public().to_peer_id();
-            let kademlia =
-                kad::Behaviour::new(peer_id.clone(), kad::store::MemoryStore::new(peer_id));
+            let kademlia = kad::Behaviour::new(peer_id, kad::store::MemoryStore::new(peer_id));
 
             // Configure identify protocol so that this node cane be discovered
             let identify = identify::Behaviour::new(identify::Config::new(
