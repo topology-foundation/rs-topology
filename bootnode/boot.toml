@@ -1,0 +1,8 @@
+port = 2122
+bootstrap_interval_secs = 60
+idle_connection_timeout_secs = 60
+
+# Add other boot nodes here
+# [[boot_nodes]]
+# peer_id = ""
+# address = ""

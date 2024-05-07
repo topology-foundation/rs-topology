@@ -3,12 +3,21 @@ use serde::{Deserialize, Serialize};
 use std::{str::FromStr, time::Duration};
 use tracing::error;
 
+pub const RAM_PROTOCOL_VERSION: &str = "ram/0.1.0";
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
+pub struct BootstrapNodeInfo {
+    pub peer_id: String,
+    pub address: String,
+}
+
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(default)]
 pub struct P2pConfig {
     pub port: u16,
+    pub bootstrap_interval_secs: u64,
     pub idle_connection_timeout_secs: u64,
-    pub boot_nodes: Vec<String>,
+    pub boot_nodes: Vec<BootstrapNodeInfo>,
     pub peers: Option<Vec<String>>,
     pub topic: String,
     pub max_peers_limit: usize,
@@ -66,12 +75,25 @@ impl Default for P2pConfig {
     fn default() -> Self {
         Self {
             port: 1211,
+            bootstrap_interval_secs: 60,
             idle_connection_timeout_secs: 60,
             boot_nodes: vec![
-                "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN".to_owned(), // TODO: set default values to our node once done
-                "QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa".to_owned(),
-                "QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb".to_owned(),
-                "QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt".to_owned(),
+                BootstrapNodeInfo {
+                    peer_id: "QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN".to_owned(),
+                    address: "/dnsaddr/bootstrap.libp2p.io".to_owned(),
+                },
+                BootstrapNodeInfo {
+                    peer_id: "QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa".to_owned(),
+                    address: "/dnsaddr/bootstrap.libp2p.io".to_owned(),
+                },
+                BootstrapNodeInfo {
+                    peer_id: "QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb".to_owned(),
+                    address: "/dnsaddr/bootstrap.libp2p.io".to_owned(),
+                },
+                BootstrapNodeInfo {
+                    peer_id: "QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt".to_owned(),
+                    address: "/dnsaddr/bootstrap.libp2p.io".to_owned(),
+                },
             ],
             peers: None,
             topic: "ramd-topic".to_owned(),
