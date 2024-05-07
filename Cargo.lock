@@ -364,7 +364,9 @@ dependencies = [
  "libp2p",
  "ramd-db",
  "ramd-tracing",
+ "serde",
  "tokio",
+ "toml",
  "tracing",
 ]
 

@@ -157,6 +157,11 @@ where
             tokio::select! {
                 // periodically running bootstrap to refresh peers dht
                 _ = self.bootstrap_interval.tick() => {
+                    // as long as peer limit is reached we do not need to search for more peers
+                    if self.is_peer_limit_reached() {
+                        continue;
+                    }
+
                     if let Err(e) = self.swarm.behaviour_mut().kademlia.bootstrap() {
                         error!(target: "p2p", "Bootstrap step has failed, waiting for next iteration. Reason: {}", e.to_string());
                     }

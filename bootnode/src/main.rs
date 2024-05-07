@@ -10,21 +10,51 @@ use ramd_db::{
     config::RocksConfig, keys::RAMD_P2P_KEYPAIR_KEY, rocks::RocksStorage, storage::Storage,
 };
 use ramd_tracing::{config::TracingConfig, init as init_tracing};
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tracing::{error, info};
 
-const BOOT_PORT: u16 = 2122;
-const IDLE_CONNECTION_TIMEOUT_SECS: u64 = 60;
-const BOOTSTRAP_INTERVAL_SECS: u64 = 60;
 const RAM_PROTOCOL_VERSION: &str = "ram/0.1.0";
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
+pub struct BootstrapNodeInfo {
+    pub peer_id: String,
+    pub address: String,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
+pub struct Config {
+    pub port: u16,
+    pub bootstrap_interval_secs: u64,
+    pub idle_connection_timeout_secs: u64,
+    pub boot_nodes: Option<Vec<BootstrapNodeInfo>>,
+}
+
+impl Config {
+    pub fn load() -> eyre::Result<Self> {
+        let config = std::fs::read_to_string("./boot.toml").map_err(|_| {
+            eyre::eyre!("File doesn't exist at project root. Make sure boot.toml is present")
+        })?;
+
+        let config: Self = toml::from_str(&config)?;
+        Ok(config)
+    }
+}
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
     // Init tracing logger
     init_tracing(&TracingConfig::default());
 
+    let boot_config = match Config::load() {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            panic!("Failed to configure p2p server for boot node. Error: {e:?}");
+        }
+    };
+
     // configure p2p server for boot node
-    let mut swarm = match setup_swarm().await {
+    let mut swarm = match setup_swarm(&boot_config).await {
         Ok(swarm) => swarm,
         Err(e) => {
             panic!("Failed to configure p2p server for boot node. Error: {e:?}");
@@ -34,8 +64,9 @@ async fn main() {
     let peer_id = swarm.local_peer_id();
     info!("Launching ram network bootstrap node with peer id: {peer_id}");
 
-    let mut interval =
-        tokio::time::interval(std::time::Duration::from_secs(BOOTSTRAP_INTERVAL_SECS));
+    let mut interval = tokio::time::interval(std::time::Duration::from_secs(
+        boot_config.bootstrap_interval_secs,
+    ));
 
     // listen for incomming events
     loop {
@@ -74,7 +105,7 @@ struct BootNodeBehavior {
     kademlia: kad::Behaviour<kad::store::MemoryStore>,
 }
 
-async fn setup_swarm() -> eyre::Result<libp2p::Swarm<BootNodeBehavior>> {
+async fn setup_swarm(boot_config: &Config) -> eyre::Result<libp2p::Swarm<BootNodeBehavior>> {
     // setup storage, we need it only for storing node's private key
     let rocks_cfg = RocksConfig::new("./".into());
     let db: Box<dyn Storage<Vec<u8>, Vec<u8>>> = Box::new(RocksStorage::new(&rocks_cfg)?);
@@ -112,12 +143,27 @@ async fn setup_swarm() -> eyre::Result<libp2p::Swarm<BootNodeBehavior>> {
             Ok(BootNodeBehavior { identify, kademlia })
         })?
         .with_swarm_config(|c| {
-            c.with_idle_connection_timeout(Duration::from_secs(IDLE_CONNECTION_TIMEOUT_SECS))
+            c.with_idle_connection_timeout(Duration::from_secs(
+                boot_config.idle_connection_timeout_secs,
+            ))
         })
         .build();
 
+    // Adding boot node addresses for initial peer discovery
+    if let Some(boot_nodes) = boot_config.boot_nodes.clone() {
+        for boot_node in boot_nodes.iter() {
+            let peer_id = boot_node.peer_id.parse()?;
+            let address = boot_node.address.parse()?;
+
+            swarm
+                .behaviour_mut()
+                .kademlia
+                .add_address(&peer_id, address);
+        }
+    }
+
     swarm.behaviour_mut().kademlia.set_mode(Some(Mode::Server));
-    swarm.listen_on(format!("/ip4/0.0.0.0/tcp/{}", BOOT_PORT).parse()?)?;
+    swarm.listen_on(format!("/ip4/0.0.0.0/tcp/{}", boot_config.port).parse()?)?;
 
     Ok(swarm)
 }
