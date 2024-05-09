@@ -356,21 +356,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bootnode"
-version = "0.1.0"
-dependencies = [
- "eyre",
- "futures",
- "libp2p",
- "ramd-db",
- "ramd-tracing",
- "serde",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
 name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

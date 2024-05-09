@@ -1,4 +1,0 @@
-# When running bootnode locally it creates folder for database and log files
-# ignore them to avoid push into github
-/ramd_db
-*.log
