@@ -12,7 +12,7 @@ const RAMD_DIR: &str = ".ramd";
 /// Directory path for storing ramd config information
 const CONFIG_DIR: &str = "config";
 
-const CONFIG_FIILE: &str = "ramd.toml";
+const CONFIG_FILE: &str = "ramd.toml";
 
 /// This struct gathers all config values used across ramd node
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -40,7 +40,7 @@ impl RamdConfig {
             home_path.as_str(),
             ramd_dir.as_str(),
             CONFIG_DIR,
-            CONFIG_FIILE,
+            CONFIG_FILE,
         ]
         .iter()
         .collect();
@@ -84,7 +84,7 @@ impl RamdConfig {
         std::fs::create_dir(&config.tracing.path)?;
 
         // store initial config values
-        let config_path = config_dir.join(CONFIG_FIILE);
+        let config_path = config_dir.join(CONFIG_FILE);
 
         let toml_config = toml::to_string(&config)?;
         std::fs::write(config_path, toml_config)?;

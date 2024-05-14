@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{str::FromStr, time::Duration};
 use tracing::error;
 
-pub const RAM_PROTOCOL_VERSION: &str = "ram/0.1.0";
+pub const RAM_PROTOCOL_VERSION: &str = "/ram/0.1.0";
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
 pub struct BootstrapNodeInfo {

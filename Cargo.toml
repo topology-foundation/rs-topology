@@ -35,8 +35,8 @@ exclude = [".github/"]
 [workspace.dependencies]
 # ramd
 ramd-config = { path = "crates/config" }
-ramd-p2p-server ={ path = "crates/p2p/p2p-server"}
-ramd-p2p-types ={ path = "crates/p2p/p2p-types"}
+ramd-p2p-server = { path = "crates/p2p/p2p-server" }
+ramd-p2p-types = { path = "crates/p2p/p2p-types" }
 ramd-processor = { path = "crates/execution/processor" }
 ramd-vm = { path = "crates/execution/vm" }
 ramd-vm-runtime = { path = "crates/execution/vm-runtime" }
@@ -92,6 +92,7 @@ tokio = { version = "1.28", features = [
 libp2p = "0.53.2"
 
 # misc
+clap = { version = "4.4.8" }
 dotenv = "0.15.0"
 base64 = "0.22.0"
 eyre = "0.6"

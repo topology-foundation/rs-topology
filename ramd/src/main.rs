@@ -1,3 +1,4 @@
+use clap::Parser;
 use dotenv::dotenv;
 use ramd_config::RamdConfig;
 use ramd_db::rocks::RocksStorage;
@@ -6,6 +7,10 @@ use ramd_node::Node;
 use ramd_p2p_server::Server as P2pServer;
 use ramd_tracing::init as init_tracing;
 use std::{sync::Arc, thread::park};
+
+mod cli;
+mod commands;
+use crate::cli::Cli;
 
 /// Note: I think ideally inside of a main function we should create a ramd instance, with builder pattern to configure everything needed and then call some
 /// sort of a blocking run function, so that all the modules we have like p2p, jsonrpc etc. are configured outside of the main function.
@@ -18,6 +23,8 @@ use std::{sync::Arc, thread::park};
 /// }
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> eyre::Result<()> {
+    let cli = Cli::parse();
+
     // parse .env faile
     dotenv().ok();
 
