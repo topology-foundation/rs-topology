@@ -1,16 +1,21 @@
 use async_channel::{Receiver, Sender};
 use futures::prelude::*;
 use libp2p::{
-    gossipsub, gossipsub::IdentTopic, identify, identity, kad, kad::Mode, noise,
-    swarm::NetworkBehaviour, swarm::SwarmEvent, tcp, yamux, PeerId,
+    gossipsub::{self, IdentTopic},
+    identify, identity,
+    kad::{self, Mode},
+    noise,
+    swarm::{NetworkBehaviour, SwarmEvent},
+    tcp, yamux, Multiaddr, PeerId,
 };
 
-use ramd_config::configs::network::{P2pConfig, RAM_PROTOCOL_VERSION};
+use ramd_config::configs::network::P2pConfig;
 use ramd_db::{keys::RAMD_P2P_KEYPAIR_KEY, storage::Storage};
 use ramd_p2p_types::message::P2pMessage;
 use std::{
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
+    str::FromStr,
     sync::Arc,
     time::Duration,
 };
@@ -33,7 +38,6 @@ where
     topic: IdentTopic,
     max_peers_limit: usize,
     msg_receiver: Receiver<P2pMessage>,
-    bootstrap_interval: tokio::time::Interval,
 }
 
 impl<S> Server<S>
@@ -78,7 +82,7 @@ where
 
                 // Configure identify protocol so that this node cane be discovered
                 let identify = identify::Behaviour::new(identify::Config::new(
-                    RAM_PROTOCOL_VERSION.to_string(),
+                    format!("/ram/{}", env!("CARGO_PKG_VERSION")),
                     key.public(),
                 ));
 
@@ -94,49 +98,34 @@ where
             .build();
 
         // Subscribe to configured topic
-        let topic = IdentTopic::new(&p2p_cfg.topic);
+        // TODO: remove this. topics should be created for ea LO, no need for a generic one
+        let topic = IdentTopic::new("ramd");
         swarm.behaviour_mut().gossipsub.subscribe(&topic)?;
 
         // Adding boot node addresses for initial peer discovery
         let boot_nodes = p2p_cfg
             .boot_nodes
+            .as_ref()
+            .unwrap_or(&vec![])
             .iter()
             .map(|boot| {
-                let peer_id = boot.peer_id.parse()?;
-                let address = boot.address.parse()?;
+                let multiaddr = Multiaddr::from_str(boot)?;
+                let peer_id = boot.split('/').last().unwrap().parse()?;
 
                 swarm
                     .behaviour_mut()
                     .kademlia
-                    .add_address(&peer_id, address);
+                    .add_address(&peer_id, multiaddr);
 
                 Ok(peer_id)
             })
             .collect::<eyre::Result<Vec<_>>>()?;
-
-        // Try to deal with peers from config
-        if let Some(known_peers) = p2p_cfg.peer_addresses()? {
-            for known_peer in known_peers.into_iter() {
-                if let Err(e) = swarm.dial(known_peer) {
-                    error!(
-                        target: "p2p",
-                        "Failed to dial with provided peer. Reason: {}",
-                        e.to_string()
-                    );
-                }
-            }
-        }
 
         swarm.behaviour_mut().kademlia.set_mode(Some(Mode::Server));
         swarm.listen_on(format!("/ip4/0.0.0.0/tcp/{}", p2p_cfg.port).parse()?)?;
 
         // Create channel for communicating with p2p module
         let (msg_sender, msg_receiver) = async_channel::unbounded();
-
-        // Create bootstrap interval timer
-        let bootstrap_interval = tokio::time::interval(std::time::Duration::from_secs(
-            p2p_cfg.bootstrap_interval_secs,
-        ));
 
         Ok((
             Self {
@@ -146,7 +135,6 @@ where
                 topic,
                 max_peers_limit: p2p_cfg.max_peers_limit,
                 msg_receiver,
-                bootstrap_interval,
             },
             msg_sender,
         ))
@@ -155,21 +143,10 @@ where
     pub async fn launch(&mut self) {
         loop {
             tokio::select! {
-                // periodically running bootstrap to refresh peers dht
-                _ = self.bootstrap_interval.tick() => {
-                    // as long as peer limit is reached we do not need to search for more peers
-                    if self.is_peer_limit_reached() {
-                        continue;
-                    }
-
-                    if let Err(e) = self.swarm.behaviour_mut().kademlia.bootstrap() {
-                        error!(target: "p2p", "Bootstrap step has failed, waiting for next iteration. Reason: {}", e.to_string());
-                    }
-                }
                 // ramd request for broadcasting a message
                 Ok(ramd_msg) = self.msg_receiver.recv() => {
                     let Ok(msg) = serde_json::to_string(&ramd_msg) else {
-                        error!(target: "p2p", "Failed to serialize P2pMessage struct. Received message: {:?}", ramd_msg);
+                        error!(target: "ramd::p2p", "Failed to serialize P2pMessage struct. Received message: {:?}", ramd_msg);
                         continue;
                     };
 
@@ -185,10 +162,10 @@ where
                 event = self.swarm.select_next_some() => match event {
                     // Event from local server, logging locally assigned
                     SwarmEvent::NewListenAddr { address, .. } => {
-                        info!(target: "p2p", "One of our listeners has reported a new local listening address. Listening on {address:?}");
+                        info!(target: "ramd::p2p", "One of our listeners has reported a new local listening address. Listening on {address:?}");
                     }
                     SwarmEvent::ConnectionEstablished { peer_id, .. } => {
-                        info!(target: "p2p", "Connection established with peer: {}", peer_id);
+                        info!(target: "ramd::p2p", "Connection established with peer: {}", peer_id);
 
                         // if peers limit reached on a new connection established event - disconnect from it
                         if self.is_peer_limit_reached() {
@@ -197,7 +174,7 @@ where
                         }
                     }
                     SwarmEvent::ConnectionClosed { peer_id, .. } => {
-                        info!(target: "p2p", "Connection was closed with peer: {}", peer_id);
+                        info!(target: "ramd::p2p", "Connection was closed with peer: {}", peer_id);
                     }
                     // Handle kademlia behavior events
                     SwarmEvent::Behaviour(RamdBehaviorEvent::Kademlia(kad::Event::OutboundQueryProgressed { result, ..})) => {

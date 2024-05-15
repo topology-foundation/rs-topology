@@ -23,52 +23,52 @@ pub struct NodeCmd {
 pub struct DbConfigs {
     /// Path for rocks db file
     #[clap(long, default_value = "db/ramd.db")]
-    db_rocks_path: Option<PathBuf>,
+    pub db_rocks_path: PathBuf,
 }
 
 #[derive(Clone, Debug, Args)]
 pub struct NetworkConfigs {
     /// List of boot nodes to join the network
     #[clap(long)]
-    network_boot_nodes: Option<Vec<String>>,
+    pub network_boot_nodes: Option<Vec<String>>,
 
     /// Path for network related files
     #[clap(long, default_value = "network/")]
-    network_config_path: PathBuf,
+    pub network_config_path: PathBuf,
 
     /// Seconds until an idle connection timeout
     #[clap(long, default_value_t = 60)]
-    network_idle_connection_timeout: u64,
+    pub network_idle_connection_timeout: u64,
 
     /// Path for libp2p secret key
     #[clap(long)]
-    network_key: Option<PathBuf>,
+    pub network_key: Option<PathBuf>,
 
     /// Maximum number of peers allowed
     #[clap(long, default_value_t = 10)]
-    network_max_peers_limit: usize,
+    pub network_max_peers_limit: usize,
 
     /// Port for libp2p
     #[clap(long, default_value_t = 1211)]
-    network_port: u16,
+    pub network_port: u16,
 }
 
 #[derive(Clone, Debug, Args)]
 pub struct NodeConfigs {
     /// Config file for ramd (relative with `ramd_dir_name`)
     #[clap(long, default_value = "config/ramd.toml")]
-    ramd_config_file: PathBuf,
+    pub ramd_config_file: PathBuf,
 
     /// Directory for all ramd fs files
     #[clap(long, default_value = "$HOME/.ramd/")]
-    ramd_dir_name: PathBuf,
+    pub ramd_dir_name: PathBuf,
 }
 
 #[derive(Clone, Debug, Args)]
 pub struct RpcConfigs {
     /// Port for JSON RPC Server
     #[clap(long, default_value_t = 1319)]
-    json_rpc_port: u16,
+    pub json_rpc_port: u16,
 }
 
 #[derive(Clone, Debug, Args)]

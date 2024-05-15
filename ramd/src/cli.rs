@@ -2,7 +2,7 @@ use crate::commands::{BootnodeCmd, NodeCmd, RelayerCmd};
 use clap::Parser;
 
 #[derive(Debug, Parser)]
-#[command(version, about)]
+#[command(version, about, arg_required_else_help = true)]
 pub struct Cli {
     #[command(subcommand)]
     pub subcommand: Option<Subcommand>,
