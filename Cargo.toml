@@ -13,7 +13,6 @@ members = [
     "crates/rpc/jsonrpc-types",
     "crates/storage/db",
     "crates/tracing",
-    "bootnode",
     "ramd",
 ]
 
