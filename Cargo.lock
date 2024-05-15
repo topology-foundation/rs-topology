@@ -405,21 +405,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bootnode"
-version = "0.1.0"
-dependencies = [
- "eyre",
- "futures",
- "libp2p",
- "ramd-db",
- "ramd-tracing",
- "serde",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
 name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2832,11 +2817,6 @@ name = "ramd-config"
 version = "0.1.0"
 dependencies = [
  "eyre",
- "ramd-db",
- "ramd-jsonrpc-server",
- "ramd-node",
- "ramd-p2p-server",
- "ramd-tracing",
  "serde",
  "toml",
 ]
@@ -2847,6 +2827,7 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "futures",
+ "ramd-config",
  "rocksdb",
  "serde",
  "tokio",
@@ -2880,6 +2861,7 @@ version = "0.1.0"
 dependencies = [
  "eyre",
  "jsonrpsee",
+ "ramd-config",
  "ramd-db",
  "ramd-jsonrpc",
  "ramd-jsonrpc-api",
@@ -2905,6 +2887,7 @@ name = "ramd-node"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "ramd-config",
  "ramd-db",
  "ramd-processor",
  "serde",
@@ -2919,6 +2902,7 @@ dependencies = [
  "eyre",
  "futures",
  "libp2p",
+ "ramd-config",
  "ramd-db",
  "ramd-p2p-types",
  "serde",
@@ -2947,6 +2931,7 @@ dependencies = [
 name = "ramd-tracing"
 version = "0.1.0"
 dependencies = [
+ "ramd-config",
  "rolling-file",
  "serde",
  "tracing",

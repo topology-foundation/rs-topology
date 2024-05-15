@@ -1,8 +1,6 @@
-pub mod config;
-
 use std::io;
 
-use config::TracingConfig;
+use ramd_config::configs::tracing::TracingConfig;
 use rolling_file::{RollingConditionBasic, RollingFileAppender};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
 

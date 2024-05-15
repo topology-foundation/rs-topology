@@ -7,8 +7,9 @@ license.workspace = true
 description = ""
 
 [dependencies]
-ramd-p2p-types.workspace = true
+ramd-config.workspace = true
 ramd-db.workspace = true
+ramd-p2p-types.workspace = true
 
 eyre.workspace = true
 tracing.workspace = true
@@ -17,4 +18,15 @@ serde_json.workspace = true
 async-channel.workspace = true
 tokio.workspace = true
 futures.workspace = true
-libp2p = { workspace = true, features = ["tokio", "dns", "kad", "noise", "tcp", "yamux", "rsa", "macros", "gossipsub", "identify"] }
+libp2p = { workspace = true, features = [
+    "tokio",
+    "dns",
+    "kad",
+    "noise",
+    "tcp",
+    "yamux",
+    "rsa",
+    "macros",
+    "gossipsub",
+    "identify",
+] }

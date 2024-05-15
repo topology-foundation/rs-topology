@@ -1,7 +1,6 @@
-use libp2p::{multiaddr::Protocol, Multiaddr};
+// use libp2p::{multiaddr::Protocol, Multiaddr};
 use serde::{Deserialize, Serialize};
-use std::{str::FromStr, time::Duration};
-use tracing::error;
+use std::time::Duration;
 
 pub const RAM_PROTOCOL_VERSION: &str = "/ram/0.1.0";
 
@@ -28,8 +27,9 @@ impl P2pConfig {
         Duration::from_secs(self.idle_connection_timeout_secs)
     }
 
-    /// Converts string address into proper [`Multiaddr`] struct.
-    /// Expected peer address format is - /ip4/{ip}/tcp/{port}
+    // Converts string address into proper [`Multiaddr`] struct.
+    // Expected peer address format is - /ip4/{ip}/tcp/{port}
+    /*
     pub fn peer_addresses(&self) -> eyre::Result<Option<Vec<Multiaddr>>> {
         if let Some(peers) = self.peers.clone() {
             let mut multi_addrs = vec![];
@@ -40,14 +40,14 @@ impl P2pConfig {
                 // validate peer address, expected format is /ip4/{ip}/tcp/{port}
                 let components = addr.iter().collect::<Vec<_>>();
                 if components.len() != 2 {
-                    error!(target: "p2p", "Invalid peer address format. Expected - /ip4/(ip)/tcp/(port)");
+                    // error!(target: "p2p", "Invalid peer address format. Expected - /ip4/(ip)/tcp/(port)");
                     continue;
                 }
 
                 match components[0] {
                     Protocol::Ip4(_) => (),
                     _ => {
-                        error!(target: "p2p", "Invalid first multiaddr part. Expected to be ip4");
+                        // error!(target: "p2p", "Invalid first multiaddr part. Expected to be ip4");
                         continue;
                     }
                 };
@@ -55,7 +55,7 @@ impl P2pConfig {
                 match components[1] {
                     Protocol::Tcp(_) => (),
                     _ => {
-                        error!(target: "p2p", "Invalid second multiaddr part. Expected to be tcp");
+                        // error!(target: "p2p", "Invalid second multiaddr part. Expected to be tcp");
                         continue;
                     }
                 };
@@ -69,6 +69,7 @@ impl P2pConfig {
             Ok(None)
         }
     }
+    */
 }
 
 impl Default for P2pConfig {

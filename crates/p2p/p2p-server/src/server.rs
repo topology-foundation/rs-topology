@@ -4,6 +4,8 @@ use libp2p::{
     gossipsub, gossipsub::IdentTopic, identify, identity, kad, kad::Mode, noise,
     swarm::NetworkBehaviour, swarm::SwarmEvent, tcp, yamux, PeerId,
 };
+
+use ramd_config::configs::network::{P2pConfig, RAM_PROTOCOL_VERSION};
 use ramd_db::{keys::RAMD_P2P_KEYPAIR_KEY, storage::Storage};
 use ramd_p2p_types::message::P2pMessage;
 use std::{
@@ -13,8 +15,6 @@ use std::{
     time::Duration,
 };
 use tracing::{debug, error, info, warn};
-
-use crate::config::{P2pConfig, RAM_PROTOCOL_VERSION};
 
 #[derive(NetworkBehaviour)]
 struct RamdBehavior {

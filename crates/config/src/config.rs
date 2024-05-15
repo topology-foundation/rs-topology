@@ -1,8 +1,9 @@
-use ramd_db::config::RocksConfig;
-use ramd_jsonrpc_server::config::JsonRpcServerConfig;
-use ramd_node::NodeConfig;
-use ramd_p2p_server::config::P2pConfig;
-use ramd_tracing::config::TracingConfig;
+use crate::configs::network::P2pConfig;
+use crate::configs::node::NodeConfig;
+use crate::configs::rpc::JsonRpcServerConfig;
+use crate::configs::storage::RocksConfig;
+use crate::configs::tracing::TracingConfig;
+
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
