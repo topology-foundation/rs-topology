@@ -5,7 +5,7 @@ use crate::configs::storage::RocksConfig;
 use crate::configs::tracing::TracingConfig;
 
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Directory path for storing all ramd related data
 const RAMD_DIR: &str = ".ramd";
@@ -115,8 +115,8 @@ impl RamdConfig {
     }
 }
 
-fn popped_path(path: &PathBuf) -> PathBuf {
-    let path_string = path.clone().into_os_string().into_string().unwrap();
+fn popped_path(path: &Path) -> PathBuf {
+    let path_string = path.to_path_buf().into_os_string().into_string().unwrap();
     let last = path_string.split('/').last().unwrap();
 
     path_string.replace(last, "").into()

@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     match cli.subcommand {
         Some(Subcommand::Bootnode(_)) => Err(eyre!("Bootnode not implemented!")),
         Some(Subcommand::Node(flags)) => {
-            let config: RamdConfig = parse_flags(flags)?.init()?;
+            let config: RamdConfig = parse_flags(*flags)?.init()?;
 
             // parse .env faile
             dotenv().ok();

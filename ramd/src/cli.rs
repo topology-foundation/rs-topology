@@ -11,12 +11,12 @@ pub struct Cli {
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     /// Runs ramd as bootnode mode, where the only functionalities are peer discovery
-    Bootnode(BootnodeCmd),
+    Bootnode(Box<BootnodeCmd>),
 
     /// Runs ramd node with full functionalities
-    Node(NodeCmd),
+    Node(Box<NodeCmd>),
 
     // NOTE: This one might make sense to have a separate implementation/repo
     /// Runs ramd relayer node. The only functionality is relaying messages
-    Relayer(RelayerCmd),
+    Relayer(Box<RelayerCmd>),
 }
