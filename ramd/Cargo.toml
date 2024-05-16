@@ -13,7 +13,7 @@ ramd-jsonrpc-server.workspace = true
 ramd-db.workspace = true
 ramd-tracing.workspace = true
 
-clap = { workspace = true, features = ["derive"] }
+clap = { workspace = true, features = ["derive", "string"] }
 dotenv.workspace = true
 eyre.workspace = true
 tokio.workspace = true

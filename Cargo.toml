@@ -91,7 +91,7 @@ tokio = { version = "1.28", features = [
 libp2p = "0.53.2"
 
 # misc
-clap = { version = "4.4.8" }
+clap = { version = "4.5.4" }
 dotenv = "0.15.0"
 base64 = "0.22.0"
 eyre = "0.6"

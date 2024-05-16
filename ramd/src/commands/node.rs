@@ -53,6 +53,10 @@ pub struct NetworkConfigs {
     pub network_port: u16,
 }
 
+fn default_ramd_dir() -> PathBuf {
+    return [env!("HOME"), ".ramd/"].iter().collect();
+}
+
 #[derive(Clone, Debug, Args)]
 pub struct NodeConfigs {
     /// Config file for ramd (relative with `ramd_dir_name`)
@@ -60,7 +64,7 @@ pub struct NodeConfigs {
     pub ramd_config_file: PathBuf,
 
     /// Directory for all ramd fs files
-    #[clap(long, default_value = "$HOME/.ramd/")]
+    #[clap(long, default_value = default_ramd_dir().into_os_string())]
     pub ramd_dir_name: PathBuf,
 }
 

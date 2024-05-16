@@ -37,12 +37,12 @@ async fn main() -> Result<()> {
     match cli.subcommand {
         Some(Subcommand::Bootnode(_)) => Err(eyre!("Bootnode not implemented!")),
         Some(Subcommand::Node(flags)) => {
-            let config: RamdConfig = parse_flags(flags)?;
+            let config: RamdConfig = parse_flags(flags)?.init()?;
 
             // parse .env faile
             dotenv().ok();
 
-            if let Err(e) = start(config).await {
+            if let Err(e) = start(&config).await {
                 return Err(eyre!("Failed to start ramd node. Reason: {}", e));
             }
 
@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
 }
 
 /// This is a temp solution to properly log received error during start-up process
-async fn start(config: RamdConfig) -> eyre::Result<()> {
+async fn start(config: &RamdConfig) -> eyre::Result<()> {
     // Init or read ramd config
     // let ramd_config = RamdConfig::init_or_read()?;
 
@@ -88,29 +88,6 @@ async fn start(config: RamdConfig) -> eyre::Result<()> {
 
 fn parse_flags(mut flags: NodeCmd) -> Result<RamdConfig> {
     // set pathbufs for non-default `ram_dir_name` and default paths
-    if flags
-        .clone()
-        .node
-        .ramd_dir_name
-        .into_os_string()
-        .into_string()
-        .unwrap()
-        .starts_with("$HOME")
-    {
-        flags.node.ramd_dir_name = [
-            env!("HOME").to_string(),
-            flags
-                .node
-                .ramd_dir_name
-                .into_os_string()
-                .into_string()
-                .unwrap()
-                .replace("$HOME/", ""),
-        ]
-        .iter()
-        .collect();
-    }
-
     if !flags
         .clone()
         .db
@@ -168,13 +145,16 @@ fn parse_flags(mut flags: NodeCmd) -> Result<RamdConfig> {
         .unwrap()
         .starts_with('/')
     {
-        flags.tracing.tracing_path = [flags.node.ramd_dir_name, flags.tracing.tracing_path]
+        flags.tracing.tracing_path = [flags.node.ramd_dir_name.clone(), flags.tracing.tracing_path]
             .iter()
             .collect()
     }
 
     Ok(RamdConfig {
-        node: NodeConfig {},
+        node: NodeConfig {
+            root_path: flags.node.ramd_dir_name,
+            config_path: flags.node.ramd_config_file,
+        },
         rocks: RocksConfig {
             path: flags.db.db_rocks_path,
         },

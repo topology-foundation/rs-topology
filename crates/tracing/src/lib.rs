@@ -9,7 +9,6 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 /// Note:
 /// RUST_LOG env must be set in order for tracing to start working
 pub fn init(config: &TracingConfig) {
-    println!("{}", config.path.as_os_str().to_str().unwrap());
     let (file_appender, _guard) = tracing_appender::non_blocking(
         RollingFileAppender::new(
             config.path.as_os_str().to_str().unwrap(),

@@ -93,6 +93,18 @@ impl RamdConfig {
         Ok(config)
     }
 
+    /// Creates default config if not exists otherwise reads it
+    pub fn init(self) -> eyre::Result<Self> {
+        // create all dirs
+        std::fs::create_dir_all(&self.node.root_path)?;
+        std::fs::create_dir_all(popped_path(&self.node.config_path))?;
+        std::fs::create_dir_all(&self.p2p.config_path)?;
+        std::fs::create_dir_all(popped_path(&self.rocks.path))?;
+        std::fs::create_dir_all(popped_path(&self.tracing.path))?;
+
+        Ok(self)
+    }
+
     fn get_ramd_dir() -> String {
         // check if custom dir name is set
         if let Ok(custom_dir) = std::env::var("RAMD_DIR_NAME") {
@@ -101,4 +113,11 @@ impl RamdConfig {
             RAMD_DIR.to_owned()
         }
     }
+}
+
+fn popped_path(path: &PathBuf) -> PathBuf {
+    let path_string = path.clone().into_os_string().into_string().unwrap();
+    let last = path_string.split('/').last().unwrap();
+
+    path_string.replace(last, "").into()
 }
