@@ -1,6 +1,6 @@
-# RAM Monorepo
+# Rust Topology
 
-RAM monorepo implements components of Topology protocol stack.
+This monorepo implements Topology Protocol in Rust.
 
 ## Running `ramd`
 
