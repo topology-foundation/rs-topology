@@ -1,5 +1,5 @@
-use crate::config::RocksConfig;
 use crate::storage::Storage;
+use ramd_config::configs::storage::RocksConfig;
 
 pub struct RocksStorage {
     db: rocksdb::DB,

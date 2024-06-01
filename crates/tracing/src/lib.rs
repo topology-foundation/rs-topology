@@ -1,8 +1,6 @@
-pub mod config;
-
 use std::io;
 
-use config::TracingConfig;
+use ramd_config::configs::tracing::TracingConfig;
 use rolling_file::{RollingConditionBasic, RollingFileAppender};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
 
@@ -13,7 +11,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 pub fn init(config: &TracingConfig) {
     let (file_appender, _guard) = tracing_appender::non_blocking(
         RollingFileAppender::new(
-            config.log_file_name(),
+            config.path.as_os_str().to_str().unwrap(),
             RollingConditionBasic::new().max_size(config.max_size_bytes),
             config.max_files,
         )

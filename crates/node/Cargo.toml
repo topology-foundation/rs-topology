@@ -7,8 +7,9 @@ license.workspace = true
 description = ""
 
 [dependencies]
-ramd-processor.workspace = true
+ramd-config.workspace = true
 ramd-db.workspace = true
+ramd-processor.workspace = true
 
 eyre.workspace = true
 serde.workspace = true

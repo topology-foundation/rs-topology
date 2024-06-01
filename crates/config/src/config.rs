@@ -1,10 +1,11 @@
-use ramd_db::config::RocksConfig;
-use ramd_jsonrpc_server::config::JsonRpcServerConfig;
-use ramd_node::NodeConfig;
-use ramd_p2p_server::config::P2pConfig;
-use ramd_tracing::config::TracingConfig;
+use crate::configs::network::P2pConfig;
+use crate::configs::node::NodeConfig;
+use crate::configs::rpc::JsonRpcServerConfig;
+use crate::configs::storage::RocksConfig;
+use crate::configs::tracing::TracingConfig;
+
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Directory path for storing all ramd related data
 const RAMD_DIR: &str = ".ramd";
@@ -12,7 +13,7 @@ const RAMD_DIR: &str = ".ramd";
 /// Directory path for storing ramd config information
 const CONFIG_DIR: &str = "config";
 
-const CONFIG_FIILE: &str = "ramd.toml";
+const CONFIG_FILE: &str = "ramd.toml";
 
 /// This struct gathers all config values used across ramd node
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Eq, Serialize)]
@@ -40,7 +41,7 @@ impl RamdConfig {
             home_path.as_str(),
             ramd_dir.as_str(),
             CONFIG_DIR,
-            CONFIG_FIILE,
+            CONFIG_FILE,
         ]
         .iter()
         .collect();
@@ -84,12 +85,24 @@ impl RamdConfig {
         std::fs::create_dir(&config.tracing.path)?;
 
         // store initial config values
-        let config_path = config_dir.join(CONFIG_FIILE);
+        let config_path = config_dir.join(CONFIG_FILE);
 
         let toml_config = toml::to_string(&config)?;
         std::fs::write(config_path, toml_config)?;
 
         Ok(config)
+    }
+
+    /// Creates default config if not exists otherwise reads it
+    pub fn init(self) -> eyre::Result<Self> {
+        // create all dirs
+        std::fs::create_dir_all(&self.node.root_path)?;
+        std::fs::create_dir_all(popped_path(&self.node.config_path))?;
+        std::fs::create_dir_all(&self.p2p.config_path)?;
+        std::fs::create_dir_all(popped_path(&self.rocks.path))?;
+        std::fs::create_dir_all(popped_path(&self.tracing.path))?;
+
+        Ok(self)
     }
 
     fn get_ramd_dir() -> String {
@@ -100,4 +113,11 @@ impl RamdConfig {
             RAMD_DIR.to_owned()
         }
     }
+}
+
+fn popped_path(path: &Path) -> PathBuf {
+    let path_string = path.to_path_buf().into_os_string().into_string().unwrap();
+    let last = path_string.split('/').last().unwrap();
+
+    path_string.replace(last, "").into()
 }

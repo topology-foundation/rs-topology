@@ -1,11 +1,9 @@
-pub mod config;
-
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use config::JsonRpcServerConfig;
 pub use jsonrpsee::server::ServerBuilder;
 use jsonrpsee::{server::ServerHandle, RpcModule};
+use ramd_config::configs::rpc::JsonRpcServerConfig;
 use ramd_db::storage::Storage;
 use ramd_jsonrpc::live_object::LiveObjectApi;
 use ramd_jsonrpc_api::server::LiveObjectApiServer;

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use crate::config::NodeConfig;
 use crate::handlers::LiveObjectHandler;
+use ramd_config::configs::node::NodeConfig;
 use ramd_db::storage::Storage;
 use ramd_processor::{Action, CreateLiveObjectAction, Message, Processor};
 use tracing::info;
