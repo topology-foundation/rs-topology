@@ -1,0 +1,16 @@
+.DS_Store
+
+**/*.rs.bk
+
+target/
+
+.vscode/
+.idea/
+*.iml
+
+.cargo-ok
+
+# Default database directory
+/gram-database
+
+.env

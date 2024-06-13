@@ -1,0 +1,15 @@
+[package]
+name = "ramd-db"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = ""
+
+[dependencies]
+ramd-config.workspace = true
+eyre.workspace = true
+rocksdb.workspace = true
+tokio.workspace = true
+futures.workspace = true
+serde.workspace = true
